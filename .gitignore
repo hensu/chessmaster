@@ -1,0 +1,10 @@
+.DS_Store
+*.nnue
+xcuserdata/
+*.xcodeproj/project.xcworkspace/xcshareddata/swiftpm/Package.resolved
+DerivedData/
+.build/
+Config.xcconfig
+supabase/.temp/
+supabase/.env
+.env

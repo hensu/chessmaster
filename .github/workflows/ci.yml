@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    # Xcode 26 to match local development: older Swift 6.0 toolchains
+    # (Xcode 16.x) reject supabase-swift's non-Sendable PostgrestResponse
+    # crossing the MainActor under strict concurrency.
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Fetch NNUE networks
+        run: ./scripts/fetch-nnue.sh
+
+      - name: Package tests
+        run: |
+          for pkg in ChessDomain BoardUI ClockKit RatingKit AnalysisKit PersistenceKit EngineKit; do
+            echo "== $pkg =="
+            (cd "Packages/$pkg" && swift test)
+          done
+
+      - name: Build app
+        run: |
+          brew install xcodegen
+          xcodegen generate
+          xcodebuild -project Chessmaster.xcodeproj -scheme Chessmaster \
+            -destination 'generic/platform=iOS Simulator' ARCHS=arm64 ONLY_ACTIVE_ARCH=YES \
+            build CODE_SIGNING_ALLOWED=NO

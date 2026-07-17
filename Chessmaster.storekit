@@ -1,0 +1,108 @@
+{
+  "identifier": "5B4B7566-0000-4000-8000-CHESSMASTER1",
+  "nonRenewingSubscriptions": [],
+  "products": [],
+  "settings": {
+    "_failTransactionsEnabled": false,
+    "_locale": "en_US",
+    "_storefront": "USA",
+    "_storeKitErrors": []
+  },
+  "subscriptionGroups": [
+    {
+      "id": "21000001",
+      "localizations": [],
+      "name": "Premium",
+      "subscriptions": [
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "12.99",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "6740000003",
+          "introductoryOffer": null,
+          "localizations": [
+            {
+              "description": "Advanced AI analysis on every game",
+              "displayName": "Diamond",
+              "locale": "en_US"
+            }
+          ],
+          "productID": "com.chessmaster.diamond.monthly",
+          "recurringSubscriptionPeriod": "P1M",
+          "referenceName": "Diamond Monthly",
+          "subscriptionGroupID": "21000001",
+          "type": "RecurringSubscription"
+        },
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "99.99",
+          "familyShareable": false,
+          "groupNumber": 1,
+          "internalID": "6740000004",
+          "introductoryOffer": null,
+          "localizations": [
+            {
+              "description": "Advanced AI analysis on every game",
+              "displayName": "Diamond",
+              "locale": "en_US"
+            }
+          ],
+          "productID": "com.chessmaster.diamond.yearly",
+          "recurringSubscriptionPeriod": "P1Y",
+          "referenceName": "Diamond Yearly",
+          "subscriptionGroupID": "21000001",
+          "type": "RecurringSubscription"
+        },
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "7.99",
+          "familyShareable": false,
+          "groupNumber": 2,
+          "internalID": "6740000001",
+          "introductoryOffer": null,
+          "localizations": [
+            {
+              "description": "Unlimited AI game reviews + retry training",
+              "displayName": "Platinum",
+              "locale": "en_US"
+            }
+          ],
+          "productID": "com.chessmaster.premium.monthly",
+          "recurringSubscriptionPeriod": "P1M",
+          "referenceName": "Platinum Monthly",
+          "subscriptionGroupID": "21000001",
+          "type": "RecurringSubscription"
+        },
+        {
+          "adHocOffers": [],
+          "codeOffers": [],
+          "displayPrice": "59.99",
+          "familyShareable": false,
+          "groupNumber": 2,
+          "internalID": "6740000002",
+          "introductoryOffer": null,
+          "localizations": [
+            {
+              "description": "Unlimited AI game reviews + retry training",
+              "displayName": "Platinum",
+              "locale": "en_US"
+            }
+          ],
+          "productID": "com.chessmaster.premium.yearly",
+          "recurringSubscriptionPeriod": "P1Y",
+          "referenceName": "Platinum Yearly",
+          "subscriptionGroupID": "21000001",
+          "type": "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version": {
+    "major": 3,
+    "minor": 0
+  }
+}

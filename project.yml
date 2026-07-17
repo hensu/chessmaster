@@ -1,0 +1,126 @@
+name: Chessmaster
+options:
+  bundleIdPrefix: com.chessmaster
+  deploymentTarget:
+    iOS: "17.0"
+  createIntermediateGroups: true
+
+packages:
+  GoogleSignIn:
+    url: https://github.com/google/GoogleSignIn-iOS
+    from: 8.0.0
+  ChessDomain: { path: Packages/ChessDomain }
+  EngineKit: { path: Packages/EngineKit }
+  BoardUI: { path: Packages/BoardUI }
+  ClockKit: { path: Packages/ClockKit }
+  RatingKit: { path: Packages/RatingKit }
+  AnalysisKit: { path: Packages/AnalysisKit }
+  PersistenceKit: { path: Packages/PersistenceKit }
+  SupabaseSync: { path: Packages/SupabaseSync }
+  AudioKitChess: { path: Packages/AudioKitChess }
+  PaywallKit: { path: Packages/PaywallKit }
+
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    DEVELOPMENT_TEAM: BD3U76LB98  # Hensu LLC
+    CODE_SIGN_STYLE: Automatic
+    # ChessMaster Supabase project (anon key is public by design; RLS
+    # enforces access). Feeds Info.plist via $(SUPABASE_URL) etc.
+    SUPABASE_URL: "https://ucpaqfjmicxfygzhquqo.supabase.co"
+    SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjcGFxZmptaWN4ZnlnemhxdXFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4MzM4MTgsImV4cCI6MjA5OTQwOTgxOH0.2NYMHRdeqZk_vVAQX2DFb1CUxBL9JS1rpFZYDlR-G58"
+    SWIFT_STRICT_CONCURRENCY: complete
+    IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+    TARGETED_DEVICE_FAMILY: "1"
+    # Single source of truth for versions (Info.plist references these).
+    # TestFlight is at 1.0 (18): bump CURRENT_PROJECT_VERSION before every
+    # archive; it must exceed the highest build ever uploaded.
+    MARKETING_VERSION: "1.0"
+    CURRENT_PROJECT_VERSION: "34"
+
+schemes:
+  Chessmaster:
+    build:
+      targets:
+        Chessmaster: all
+    run:
+      config: Debug
+      storeKitConfiguration: Chessmaster.storekit
+    test:
+      config: Debug
+      storeKitConfiguration: Chessmaster.storekit
+      targets:
+        - ChessmasterUITests
+
+targets:
+  ChessmasterUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources:
+      - ChessmasterUITests
+    dependencies:
+      - target: Chessmaster
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.hensu.chessmaster.uitests
+        GENERATE_INFOPLIST_FILE: YES
+
+  Chessmaster:
+    type: application
+    platform: iOS
+    sources:
+      - Chessmaster
+    dependencies:
+      - package: GoogleSignIn
+        product: GoogleSignIn
+      - package: ChessDomain
+      - package: EngineKit
+      - package: BoardUI
+      - package: ClockKit
+      - package: RatingKit
+      - package: AnalysisKit
+      - package: PersistenceKit
+      - package: SupabaseSync
+      - package: AudioKitChess
+      - package: PaywallKit
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.hensu.chessmaster
+        ENABLE_PREVIEWS: YES
+        TARGETED_DEVICE_FAMILY: 1
+        GOOGLE_IOS_CLIENT_ID: 115132034290-7rdua0eca5dtpk8s43i5tigvd7m8o2s3.apps.googleusercontent.com
+        GOOGLE_IOS_URL_SCHEME: com.googleusercontent.apps.115132034290-7rdua0eca5dtpk8s43i5tigvd7m8o2s3
+        # Fill after creating the GA4 property (Measurement Protocol).
+        GA_MEASUREMENT_ID: "G-8JG1S0FTK3"
+        GA_API_SECRET: "0IYnQrAISbyVEGewkpAxqg"
+    entitlements:
+      path: Chessmaster/Chessmaster.entitlements
+      properties:
+        com.apple.developer.applesignin: [Default]
+    info:
+      path: Chessmaster/Info.plist
+      properties:
+        CFBundleDisplayName: Chess AI
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        UILaunchScreen: {UIImageName: LaunchLogo}
+        UISupportedInterfaceOrientations: [UIInterfaceOrientationPortrait]
+        # HTTPS-only networking: exempt from export-compliance docs.
+        ITSAppUsesNonExemptEncryption: false
+        # Backend config — fill in after creating the Supabase project
+        # (see supabase/README.md). Empty = app runs fully offline.
+        SUPABASE_URL: "$(SUPABASE_URL)"
+        SUPABASE_ANON_KEY: "$(SUPABASE_ANON_KEY)"
+        # Native Google Sign-In (empty until the iOS OAuth client exists —
+        # the app falls back to the web flow when unset).
+        GIDClientID: "$(GOOGLE_IOS_CLIENT_ID)"
+        # GA4 Measurement Protocol (SDK-free: the Firebase Analytics binary
+        # is closed-source and GPL-incompatible). Empty = GA disabled.
+        GA_MEASUREMENT_ID: "$(GA_MEASUREMENT_ID)"
+        GA_API_SECRET: "$(GA_API_SECRET)"
+        # OAuth callbacks: Supabase web flow + Google native (reversed client ID).
+        CFBundleURLTypes:
+          - CFBundleURLName: com.hensu.chessmaster.auth
+            CFBundleURLSchemes: [chessmaster]
+          - CFBundleURLName: com.hensu.chessmaster.google
+            CFBundleURLSchemes: ["$(GOOGLE_IOS_URL_SCHEME)"]
