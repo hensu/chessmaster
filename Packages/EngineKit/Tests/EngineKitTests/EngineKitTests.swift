@@ -112,3 +112,44 @@ import Testing
         }
     }
 }
+
+@Suite struct WeakMovePickerTests {
+    private let candidates = [
+        CandidateMove(moveUCI: "e2e4", scoreCp: 40, scoreMate: nil),
+        CandidateMove(moveUCI: "d2d4", scoreCp: -20, scoreMate: nil),
+        CandidateMove(moveUCI: "a2a3", scoreCp: -180, scoreMate: nil),
+    ]
+
+    @Test func zeroTemperaturePicksBest() {
+        #expect(WeakMovePicker.pick(candidates, temperatureCp: 0, random: 0.99) == 0)
+    }
+
+    @Test func lowTemperatureStronglyPrefersBest() {
+        // At T=25 a 60cp deficit is ~e^-2.4: the best move dominates.
+        #expect(WeakMovePicker.pick(candidates, temperatureCp: 25, random: 0.5) == 0)
+    }
+
+    @Test func highTemperatureSpreadsChoice() {
+        // At T=225 the second move must be reachable well within [0,1).
+        var picked = Set<Int>()
+        for r in stride(from: 0.05, to: 1.0, by: 0.05) {
+            picked.insert(WeakMovePicker.pick(candidates, temperatureCp: 225, random: r))
+        }
+        #expect(picked.contains(0) && picked.contains(1))
+    }
+
+    @Test func mateForAlwaysWinsAtLowTemperature() {
+        let withMate = [
+            CandidateMove(moveUCI: "d8h4", scoreCp: nil, scoreMate: 1),
+            CandidateMove(moveUCI: "e2e4", scoreCp: 30, scoreMate: nil),
+        ]
+        #expect(WeakMovePicker.pick(withMate, temperatureCp: 150, random: 0.9) == 0)
+    }
+
+    @Test func parsesMultiPVRank() {
+        let info = UCIEngine.parseInfo("info depth 8 multipv 3 score cp -55 pv a2a3 e7e5")
+        #expect(info?.multipv == 3)
+        #expect(info?.scoreCp == -55)
+        #expect(info?.pv.first == "a2a3")
+    }
+}

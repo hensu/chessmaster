@@ -28,7 +28,10 @@ struct EngineOpponent: OpponentProvider {
         // A sub-100ms reply feels jarring; keep a small minimum think time.
         let minimumThink = ContinuousClock.now + .milliseconds(300)
 
-        if Double.random(in: 0..<1) < blunderProbability, let move = randomMove(fen: fen) {
+        // Rare genuine howler at the weakest levels: real newcomers do
+        // occasionally hang a piece outright.
+        if Double.random(in: 0..<1) < blunderProbability * 0.12,
+           let move = randomMove(fen: fen) {
             try? await Task.sleep(until: minimumThink)
             return move
         }
@@ -42,11 +45,33 @@ struct EngineOpponent: OpponentProvider {
         try await engine.startIfNeeded(evalFileBig: big, evalFileSmall: small)
         try await engine.apply(options: level.uciOptions)
 
-        let result = try await engine.search(fen: fen, movetimeMs: level.movetimeMs, depth: level.depth)
+        let chosenUCI: String
+        if blunderProbability > 0 {
+            // Consistently mediocre beats alternating perfect/terrible:
+            // sample the engine's own candidates, temperature-scaled so
+            // weak levels prefer plausibly-bad moves (50-200cp drops).
+            let candidates = try await engine.searchCandidates(
+                fen: fen, movetimeMs: level.movetimeMs, depth: level.depth, count: 6)
+            if candidates.isEmpty {
+                let result = try await engine.search(
+                    fen: fen, movetimeMs: level.movetimeMs, depth: level.depth)
+                chosenUCI = result.bestMoveUCI
+            } else {
+                let index = WeakMovePicker.pick(
+                    candidates,
+                    temperatureCp: blunderProbability * 500,
+                    random: Double.random(in: 0..<1))
+                chosenUCI = candidates[index].moveUCI
+            }
+        } else {
+            let result = try await engine.search(
+                fen: fen, movetimeMs: level.movetimeMs, depth: level.depth)
+            chosenUCI = result.bestMoveUCI
+        }
         try? await Task.sleep(until: minimumThink)
 
-        guard let move = OpponentMove(uci: result.bestMoveUCI) else {
-            throw EngineOpponentError.badMove(result.bestMoveUCI)
+        guard let move = OpponentMove(uci: chosenUCI) else {
+            throw EngineOpponentError.badMove(chosenUCI)
         }
         return move
     }

@@ -18,7 +18,22 @@ public struct SearchInfo: Sendable {
     public var scoreCp: Int?
     /// Mate in N (negative: getting mated).
     public var scoreMate: Int?
+    /// 1-based MultiPV rank (nil when MultiPV is off).
+    public var multipv: Int?
     public var pv: [String] = []
+}
+
+/// One engine candidate move from a MultiPV search.
+public struct CandidateMove: Sendable {
+    public let moveUCI: String
+    public let scoreCp: Int?
+    public let scoreMate: Int?
+
+    /// Comparable value in centipawns; mates saturate the scale.
+    public var value: Double {
+        if let scoreMate { return scoreMate > 0 ? 30_000 : -30_000 }
+        return Double(scoreCp ?? 0)
+    }
 }
 
 public struct SearchResult: Sendable {
@@ -127,6 +142,35 @@ public actor UCIEngine {
         return SearchResult(bestMoveUCI: String(parts[1]), info: lastInfo)
     }
 
+    /// MultiPV search: the engine's top candidate moves with evaluations,
+    /// deepest iteration wins. MultiPV is reset to 1 afterwards so other
+    /// consumers (analysis, single-move search) are unaffected.
+    public func searchCandidates(
+        fen: String, movetimeMs: Int, depth: Int? = nil, count: Int
+    ) async throws -> [CandidateMove] {
+        try ensureStarted()
+        try await apply(options: ["MultiPV": "\(count)"])
+        defer { Task { try? await self.apply(options: ["MultiPV": "1"]) } }
+
+        send("position fen \(fen)")
+        var go = "go movetime \(movetimeMs)"
+        if let depth { go += " depth \(depth)" }
+        send(go)
+
+        var byRank: [Int: SearchInfo] = [:]
+        _ = try await waitFor(timeoutMs: movetimeMs + 10000, command: go) { line in
+            if line.hasPrefix("info "), let parsed = Self.parseInfo(line),
+               !parsed.pv.isEmpty {
+                byRank[parsed.multipv ?? 1] = parsed
+            }
+            return line.hasPrefix("bestmove")
+        }
+        return byRank.keys.sorted().compactMap { rank in
+            guard let info = byRank[rank], let move = info.pv.first else { return nil }
+            return CandidateMove(moveUCI: move, scoreCp: info.scoreCp, scoreMate: info.scoreMate)
+        }
+    }
+
     // MARK: - Plumbing
 
     private func ensureStarted() throws {
@@ -199,6 +243,8 @@ public actor UCIEngine {
             switch tokens[i] {
             case "depth" where i + 1 < tokens.count:
                 info.depth = Int(tokens[i + 1]); i += 2
+            case "multipv" where i + 1 < tokens.count:
+                info.multipv = Int(tokens[i + 1]); i += 2
             case "score" where i + 2 < tokens.count:
                 if tokens[i + 1] == "cp" { info.scoreCp = Int(tokens[i + 2]) }
                 if tokens[i + 1] == "mate" { info.scoreMate = Int(tokens[i + 2]) }
