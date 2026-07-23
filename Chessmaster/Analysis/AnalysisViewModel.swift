@@ -113,7 +113,9 @@ final class AnalysisViewModel {
                     self?.paywallSource = "coaching"
                     self?.showPaywall = true
                 } else {
-                    self?.coachingError = "Coaching is unavailable right now."
+                    // A transient backend/model hiccup: the failed report is
+                    // retryable, so invite another tap rather than a dead end.
+                    self?.coachingError = "The coach is taking a moment — tap to try again."
                 }
             }
             self?.coachingLoading = false

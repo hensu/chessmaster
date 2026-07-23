@@ -275,7 +275,7 @@ struct ProfileScreen: View {
                     reviewMessage = "The coach couldn't build your overview yet."
                 }
             } catch {
-                reviewMessage = "Play a few more games with coaching first — the overview needs at least 2 coached games."
+                reviewMessage = "The coach is taking a moment — try again shortly. (Needs at least 2 coached games.)"
             }
         }
     }

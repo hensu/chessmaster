@@ -36,7 +36,7 @@ settings:
     # TestFlight is at 1.0 (18): bump CURRENT_PROJECT_VERSION before every
     # archive; it must exceed the highest build ever uploaded.
     MARKETING_VERSION: "1.0"
-    CURRENT_PROJECT_VERSION: "35"
+    CURRENT_PROJECT_VERSION: "36"
 
 schemes:
   Chessmaster:
