@@ -276,8 +276,12 @@ struct HomeScreen: View {
         Button(action: action) {
             VStack(spacing: 4) {
                 Text(top)
-                    .font(top.count > 3 ? .headline : .title2.bold())
-                    .monospacedDigit()
+                    // One weight/size for every tile; the few longer labels
+                    // (15+10, 30+20, Custom) shrink slightly instead of
+                    // switching to a smaller, lighter font.
+                    .font(.title2.bold().monospacedDigit())
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.6)
                 Text(bottom)
                     .font(.caption)
                     .foregroundStyle(.secondary)
