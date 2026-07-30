@@ -56,6 +56,14 @@ public struct PaywallScreen: View {
             SubscriptionStoreView(productIDs: EntitlementStore.productIDs)
                 .storeButton(.visible, for: .restorePurchases)
                 .subscriptionStoreControlStyle(.prominentPicker)
+                // Required in the purchase flow (App Store Guideline 3.1.2):
+                // functional Terms of Use (EULA) + Privacy Policy links.
+                .subscriptionStorePolicyDestination(
+                    url: URL(string: "https://getchessai.com/terms.html")!,
+                    for: .termsOfService)
+                .subscriptionStorePolicyDestination(
+                    url: URL(string: "https://getchessai.com/privacy.html")!,
+                    for: .privacyPolicy)
                 .inAppPurchaseOptions { _ in
                     appAccountToken.map { [.appAccountToken($0)] } ?? []
                 }
@@ -68,6 +76,16 @@ public struct PaywallScreen: View {
                         onPurchaseCancelled?()
                     }
                 }
+
+            // Always-visible, pinned below the store view so the required
+            // links can't be missed (App Store Guideline 3.1.2).
+            HStack(spacing: 6) {
+                Link("Terms of Use", destination: URL(string: "https://getchessai.com/terms.html")!)
+                Text("·").foregroundStyle(.secondary)
+                Link("Privacy Policy", destination: URL(string: "https://getchessai.com/privacy.html")!)
+            }
+            .font(.footnote)
+            .padding(.vertical, 10)
         }
     }
 
