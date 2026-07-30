@@ -8,3 +8,4 @@ Config.xcconfig
 supabase/.temp/
 supabase/.env
 .env
+.icon-archive/
