@@ -17,9 +17,9 @@ final class PremiumTests: XCTestCase {
 
         // The AI report is locked: the button is marked Premium and taps
         // through to the paywall.
-        let coach = app.buttons["Coach this game (Premium)"]
+        let coach = app.buttons["getAICoaching"]
         XCTAssertTrue(coach.waitForExistence(timeout: 10),
-                      "AI coaching should be labeled Premium for free users")
+                      "the Get AI Coaching CTA should be present for free users")
         if !coach.isHittable { app.swipeUp() }
         coach.tap()
         XCTAssertTrue(app.staticTexts["Choose your coach"].waitForExistence(timeout: 5),

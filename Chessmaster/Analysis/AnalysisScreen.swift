@@ -37,6 +37,8 @@ struct AnalysisScreen: View {
                     }
                     .padding(.horizontal, 8)
 
+                    coachingCTA
+
                     if !model.userMistakes.isEmpty {
                         mistakeReview(scrollProxy: proxy)
                     }
@@ -112,6 +114,56 @@ struct AnalysisScreen: View {
         }
     }
 
+    /// First-class AI coaching call-to-action, pinned under the board.
+    /// Hidden once a report exists (notes then live in the cards + full
+    /// report below); a spinner replaces it while generating.
+    @ViewBuilder
+    private var coachingCTA: some View {
+        if model.coachingReport != nil {
+            EmptyView()
+        } else if model.coachingLoading {
+            HStack(spacing: 8) {
+                ProgressView().controlSize(.small)
+                Text("Chess AI is analyzing your game…")
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 16)
+            .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 16))
+            .padding(.horizontal)
+        } else if model.coachingAvailable {
+            Button {
+                model.requestCoaching()
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "sparkles")
+                        .font(.title3.weight(.semibold))
+                    VStack(alignment: .leading, spacing: 1) {
+                        Text("Get AI Coaching")
+                            .font(.headline)
+                        Text(model.isPremium
+                             ? "Personal notes on every mistake"
+                             : "Personal notes on every mistake · Premium")
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.9))
+                    }
+                    Spacer()
+                    Image(systemName: model.isPremium ? "chevron.right" : "crown.fill")
+                        .font(.subheadline.weight(.semibold))
+                }
+                .foregroundStyle(.white)
+                .padding(.horizontal, 18)
+                .padding(.vertical, 16)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.green, in: RoundedRectangle(cornerRadius: 16))
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("getAICoaching")
+            .padding(.horizontal)
+        }
+    }
+
     /// Guided walkthrough of the player's mistakes: step through each one
     /// (board shows played-in-red vs best-in-green), finish with the coach.
     private func mistakeReview(scrollProxy: ScrollViewProxy) -> some View {
@@ -167,8 +219,7 @@ struct AnalysisScreen: View {
                             .font(.headline)
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.green)
+                    .buttonStyle(.bordered)
                     .disabled(model.mistakeIndex == model.userMistakes.count - 1)
                 }
                 .controlSize(.large)
@@ -230,27 +281,6 @@ struct AnalysisScreen: View {
                         .foregroundStyle(.green)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.top, 4)
-                }
-            } else if model.coachingReport == nil, !model.coachingLoading,
-                      model.mistakeIndex != nil {
-                // The single coaching entry point, right where the player
-                // is looking.
-                Button {
-                    model.requestCoaching()
-                } label: {
-                    Label(
-                        model.isPremium ? "Coach this game" : "Coach this game (Premium)",
-                        systemImage: model.isPremium ? "sparkles" : "crown.fill"
-                    )
-                    .font(.subheadline.weight(.medium))
-                }
-                .buttonStyle(.bordered)
-            } else if model.coachingLoading {
-                HStack(spacing: 6) {
-                    ProgressView().controlSize(.small)
-                    Text("Chess AI is reviewing…")
-                        .font(.footnote)
-                        .foregroundStyle(.secondary)
                 }
             }
 
@@ -321,20 +351,6 @@ struct AnalysisScreen: View {
                 }
                 // The mistake card carries the "Ask Chess AI" entry point;
                 // this one only appears for games with no flagged mistakes.
-                // Only for games with no flagged mistakes — otherwise the
-                // mistake-review card already carries this button.
-                if model.userMistakes.isEmpty, model.coachingAvailable {
-                    Button {
-                        model.requestCoaching()
-                    } label: {
-                        Label(
-                            model.isPremium ? "Coach this game" : "Coach this game (Premium)",
-                            systemImage: model.isPremium ? "sparkles" : "crown.fill"
-                        )
-                        .frame(maxWidth: .infinity)
-                    }
-                    .buttonStyle(.bordered)
-                }
             }
         }
         .padding(.horizontal)
