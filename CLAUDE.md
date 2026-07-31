@@ -20,7 +20,7 @@ xcodegen generate           # project.yml is the source of truth for the .xcodep
 ## Versioning & TestFlight
 
 - `project.yml` → `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` are the ONLY place to bump versions; Info.plist references them via `$(...)`. Never hardcode versions in Info.plist — xcodegen regenerates it.
-- TestFlight train is 1.0; highest uploaded build is **18** (repo is at 22). Bump `CURRENT_PROJECT_VERSION` above the last upload before every archive, then `xcodegen generate`.
+- TestFlight train is 1.0; highest uploaded build is **45** (repo is at 45). Bump `CURRENT_PROJECT_VERSION` above the last upload before every archive, then `xcodegen generate`. ASC rejects a duplicate build number, so verify the last uploaded number before bumping.
 - Uploads are manual (Xcode Organizer). CI does not deploy.
 
 ## Architecture map
@@ -34,7 +34,7 @@ xcodegen generate           # project.yml is the source of truth for the .xcodep
 ## Subscription tiers
 
 - Platinum = historical `com.chessmaster.premium.*` product IDs (grandfathered, $7.99/$59.99); Diamond = `com.chessmaster.diamond.*` ($12.99/$99.99). Plan derives from `entitlements.product_id` via `planFor()` in `_shared/coaching.ts` and `Plan.plan(forProductID:)` in PaywallKit — no plan column.
-- Tiering: on-device ENGINE analysis (eval/accuracy/best-move/mistake stepper) is FREE for everyone, incl. auto post-game (runPostGameAnalysis has no premium gate). AI coaching report is a HARD PAYWALL: `requestCoaching()` shows the paywall for non-premium and `generate-coaching-report` returns `premium_required` for the free plan (no free weekly). Platinum = unlimited Flash + `PLATINUM_DEEP_REVIEWS` (5) Opus/month; Diamond = all reviews on `COACHING_DEEP_MODEL` (claude-opus-4-8) + exclusive player review (`diamond_required`). Fair-use cap 150/mo. In-app the AI button is labeled "Coach this game" ("(Premium)" + crown when locked).
+- Tiering: on-device ENGINE analysis (eval/accuracy/best-move/mistake stepper) is FREE for everyone, incl. auto post-game (runPostGameAnalysis has no premium gate). AI coaching report is a HARD PAYWALL: `requestCoaching()` shows the paywall for non-premium and `generate-coaching-report` returns `premium_required` for the free plan (no free weekly). Platinum = unlimited Flash + `PLATINUM_DEEP_REVIEWS` (5) Opus/month; Diamond = all reviews on `COACHING_DEEP_MODEL` (claude-opus-4-8) + exclusive player review (`diamond_required`). Fair-use cap 150/mo. In-app the AI coach is a first-class green CTA below the board ("Get AI Coaching", id `getAICoaching`) — for non-premium the subtitle is suffixed "· Premium" with a crown, and tapping opens the paywall.
 - Client: `EntitlementStore.plan` (free/platinum/diamond); `--premium` arg = platinum, `--diamond` = diamond. GA user property `plan`.
 
 ## Backend (separate private repo)
