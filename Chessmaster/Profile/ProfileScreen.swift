@@ -37,7 +37,7 @@ struct ProfileScreen: View {
                 .pickerStyle(.segmented)
 
                 if history.isEmpty {
-                    Text("Play rated games against Stockfish to build your rating history.")
+                    Text("Play rated games against Chess AI to build your rating history.")
                         .font(.footnote)
                         .foregroundStyle(.secondary)
                 } else {
@@ -120,7 +120,7 @@ struct ProfileScreen: View {
                 }
             }
 
-            Section("Record vs Stockfish") {
+            Section("Record vs Chess AI") {
                 HStack {
                     statView(count: stats.wins, label: "Wins", color: .green)
                     statView(count: stats.draws, label: "Draws", color: .secondary)
@@ -130,7 +130,7 @@ struct ProfileScreen: View {
             }
 
             Section("Game") {
-                Picker("Stockfish strength", selection: Binding(
+                Picker("Chess AI strength", selection: Binding(
                     get: { levelMode == "auto" ? 0 : engineLevel },
                     set: { newValue in
                         if newValue == 0 {

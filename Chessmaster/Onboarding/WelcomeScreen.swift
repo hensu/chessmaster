@@ -291,7 +291,7 @@ struct WelcomeScreen: View {
                 .font(.system(size: 84, weight: .bold, design: .rounded))
                 .monospacedDigit()
                 .padding(.top, 4)
-            Text("We'll start Stockfish at your level — hard enough to learn from, easy enough to beat. It adapts every game.")
+            Text("We'll start Chess AI at your level — hard enough to learn from, easy enough to beat. It adapts every game.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

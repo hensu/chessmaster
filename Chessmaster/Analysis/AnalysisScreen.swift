@@ -239,8 +239,8 @@ struct AnalysisScreen: View {
                     model.requestCoaching()
                 } label: {
                     Label(
-                        "Ask Chess AI",
-                        systemImage: "sparkles"
+                        model.isPremium ? "Ask Chess AI" : "Ask Chess AI (Premium)",
+                        systemImage: model.isPremium ? "sparkles" : "crown.fill"
                     )
                     .font(.subheadline.weight(.medium))
                 }
@@ -321,13 +321,13 @@ struct AnalysisScreen: View {
                 }
                 // The mistake card carries the "Ask Chess AI" entry point;
                 // this one only appears for games with no flagged mistakes.
-                if model.userMistakes.isEmpty, model.coachingAvailable || !model.isPremium {
+                if model.coachingAvailable {
                     Button {
                         model.requestCoaching()
                     } label: {
                         Label(
-                            "Ask Chess AI",
-                            systemImage: "sparkles"
+                            model.isPremium ? "Ask Chess AI" : "Ask Chess AI (Premium)",
+                            systemImage: model.isPremium ? "sparkles" : "crown.fill"
                         )
                         .frame(maxWidth: .infinity)
                     }
@@ -380,7 +380,7 @@ struct AnalysisScreen: View {
         } else if model.analyzing {
             VStack(spacing: 6) {
                 ProgressView(value: model.progress)
-                Text("Analyzing with Stockfish…")
+                Text("Chess AI is analyzing…")
                     .font(.footnote)
                     .foregroundStyle(.secondary)
             }

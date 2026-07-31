@@ -83,6 +83,12 @@ final class AnalysisViewModel {
     /// the server enforces the limit, so everyone may ask.
     func requestCoaching() {
         guard let container else { return }
+        // Engine analysis is free; the AI coaching report is a paid feature.
+        guard container.entitlements.isPremium else {
+            paywallSource = "coaching"
+            showPaywall = true
+            return
+        }
         guard !coachingLoading, coachingReport == nil else { return }
         container.sync.track("coaching_requested")
         coachingLoading = true
@@ -106,17 +112,9 @@ final class AnalysisViewModel {
                     self?.coachingError = "The coach couldn't analyze this game."
                 }
             } catch {
-                if self?.isPremium == false {
-                    // Free weekly review already used (or backend gate):
-                    // this is the upgrade moment.
-                    self?.coachingError = "You've used this week's free review — upgrade for unlimited coaching."
-                    self?.paywallSource = "coaching"
-                    self?.showPaywall = true
-                } else {
-                    // A transient backend/model hiccup: the failed report is
-                    // retryable, so invite another tap rather than a dead end.
-                    self?.coachingError = "The coach is taking a moment — tap to try again."
-                }
+                // Premium is confirmed before we get here; any failure is a
+                // transient backend/model hiccup and the report is retryable.
+                self?.coachingError = "The coach is taking a moment — tap to try again."
             }
             self?.coachingLoading = false
         }
