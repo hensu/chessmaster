@@ -360,8 +360,10 @@ struct AnalysisScreen: View {
         HStack(spacing: 24) {
             Button { model.jump(to: 0) } label: { Image(systemName: "backward.end.fill") }
                 .disabled(model.currentPly == 0)
+                .accessibilityIdentifier("replayFirst")
             Button { model.jump(to: model.currentPly - 1) } label: { Image(systemName: "chevron.left") }
                 .disabled(model.currentPly == 0)
+                .accessibilityIdentifier("replayBack")
             Text("\(model.currentPly)/\(model.plyCount)")
                 .font(.footnote.monospacedDigit())
                 .foregroundStyle(.secondary)
