@@ -15,6 +15,15 @@ final class PremiumTests: XCTestCase {
         XCTAssertTrue(app.navigationBars["Analysis"].waitForExistence(timeout: 60),
                       "free users should get engine analysis after a game")
 
+        // Free users can step through the moves ("the hand") with the
+        // replay controls — engine navigation is not gated.
+        let counter = app.staticTexts["plyCounter"]
+        XCTAssertTrue(counter.waitForExistence(timeout: 5))
+        let before = counter.label
+        app.buttons["replayForward"].tap()
+        XCTAssertNotEqual(before, counter.label,
+                          "free user should be able to advance moves")
+
         // The AI report is locked: the button is marked Premium and taps
         // through to the paywall.
         let coach = app.buttons["getAICoaching"]

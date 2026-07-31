@@ -366,8 +366,10 @@ struct AnalysisScreen: View {
                 .font(.footnote.monospacedDigit())
                 .foregroundStyle(.secondary)
                 .frame(minWidth: 50)
+                .accessibilityIdentifier("plyCounter")
             Button { model.jump(to: model.currentPly + 1) } label: { Image(systemName: "chevron.right") }
                 .disabled(model.currentPly == model.plyCount)
+                .accessibilityIdentifier("replayForward")
             Button { model.jump(to: model.plyCount) } label: { Image(systemName: "forward.end.fill") }
                 .disabled(model.currentPly == model.plyCount)
         }
