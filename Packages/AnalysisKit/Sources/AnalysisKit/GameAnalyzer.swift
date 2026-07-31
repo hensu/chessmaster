@@ -51,10 +51,28 @@ public actor GameAnalyzer {
     private let evalFileBig: URL
     private let evalFileSmall: URL
 
+    /// Full strength for analysis, regardless of the last game's level.
+    /// Folded into every search so it applies atomically even when the
+    /// opponent is sharing the engine at a reduced skill.
+    static let engineOptions = [
+        "Skill Level": "20",
+        "UCI_LimitStrength": "false",
+    ]
+
     public init(engine: UCIEngine = .shared, evalFileBig: URL, evalFileSmall: URL) {
         self.engine = engine
         self.evalFileBig = evalFileBig
         self.evalFileSmall = evalFileSmall
+    }
+
+    /// Evaluate one position and store it in the shared cache. Used by the
+    /// in-game prefetcher to warm positions during the user's thinking time,
+    /// so the post-game `analyze` pass mostly hits the cache. Best-effort:
+    /// engine hiccups are swallowed (a miss just recomputes later).
+    public func warm(fen: String, movetimeMs: Int) async {
+        guard (try? await engine.startIfNeeded(
+            evalFileBig: evalFileBig, evalFileSmall: evalFileSmall)) != nil else { return }
+        _ = try? await evaluate(fen: fen, movetimeMs: movetimeMs)
     }
 
     /// Analyze a full game.
@@ -71,11 +89,6 @@ public actor GameAnalyzer {
         guard let replay = GameReplay(pgn: pgn) else { throw AnalyzerError.badPGN }
 
         try await engine.startIfNeeded(evalFileBig: evalFileBig, evalFileSmall: evalFileSmall)
-        // Full strength for analysis regardless of last game level.
-        try await engine.apply(options: [
-            "Skill Level": "20",
-            "UCI_LimitStrength": "false",
-        ])
         try await engine.newGame()
 
         // Eval of every position: index 0 = start, i = after ply i.
@@ -155,9 +168,14 @@ public actor GameAnalyzer {
     /// Returns (cp white-POV, mate white-POV, bestmove) for a FEN.
     /// Terminal positions (no legal moves) are synthesized from the rules.
     private func evaluate(fen: String, movetimeMs: Int) async throws -> (Int, Int?, String?, [String]) {
+        // Warmed during play? Serve it — no engine call needed.
+        if let cached = await EngineEvalCache.shared.value(fen: fen, atLeastMovetimeMs: movetimeMs) {
+            return (cached.cpWhite, cached.mate, cached.bestMoveUCI, cached.pv)
+        }
         let sideToMoveIsWhite = fen.split(separator: " ").dropFirst().first == "w"
         do {
-            let result = try await engine.search(fen: fen, movetimeMs: movetimeMs)
+            let result = try await engine.search(
+                fen: fen, movetimeMs: movetimeMs, options: Self.engineOptions)
             var cp: Int
             var mate: Int?
             if let mateIn = result.info.scoreMate {
@@ -168,7 +186,12 @@ public actor GameAnalyzer {
                 cp = result.info.scoreCp ?? 0
                 if !sideToMoveIsWhite { cp = -cp }
             }
-            return (cp, mate, result.bestMoveUCI, Array(result.info.pv.prefix(8)))
+            let pv = Array(result.info.pv.prefix(8))
+            await EngineEvalCache.shared.set(
+                PositionEval(cpWhite: cp, mate: mate, bestMoveUCI: result.bestMoveUCI,
+                             pv: pv, movetimeMs: movetimeMs),
+                fen: fen)
+            return (cp, mate, result.bestMoveUCI, pv)
         } catch UCIEngineError.noBestMove {
             // Checkmate or stalemate on the board.
             guard let position = Position(fen: fen) else { return (0, nil, nil, []) }

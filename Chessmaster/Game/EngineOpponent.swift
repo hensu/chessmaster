@@ -43,7 +43,9 @@ struct EngineOpponent: OpponentProvider {
 
         let engine = UCIEngine.shared
         try await engine.startIfNeeded(evalFileBig: big, evalFileSmall: small)
-        try await engine.apply(options: level.uciOptions)
+        // Options are folded into each search so the whole move transaction
+        // stays atomic even while background analysis shares the engine.
+        let options = level.uciOptions
 
         let chosenUCI: String
         if blunderProbability > 0 {
@@ -51,10 +53,11 @@ struct EngineOpponent: OpponentProvider {
             // sample the engine's own candidates, temperature-scaled so
             // weak levels prefer plausibly-bad moves (50-200cp drops).
             let candidates = try await engine.searchCandidates(
-                fen: fen, movetimeMs: level.movetimeMs, depth: level.depth, count: 6)
+                fen: fen, movetimeMs: level.movetimeMs, depth: level.depth, count: 6,
+                options: options)
             if candidates.isEmpty {
                 let result = try await engine.search(
-                    fen: fen, movetimeMs: level.movetimeMs, depth: level.depth)
+                    fen: fen, movetimeMs: level.movetimeMs, depth: level.depth, options: options)
                 chosenUCI = result.bestMoveUCI
             } else {
                 let index = WeakMovePicker.pick(
@@ -65,7 +68,7 @@ struct EngineOpponent: OpponentProvider {
             }
         } else {
             let result = try await engine.search(
-                fen: fen, movetimeMs: level.movetimeMs, depth: level.depth)
+                fen: fen, movetimeMs: level.movetimeMs, depth: level.depth, options: options)
             chosenUCI = result.bestMoveUCI
         }
         try? await Task.sleep(until: minimumThink)

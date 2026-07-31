@@ -22,6 +22,7 @@
 		246E146BE8EB017EDB703BDC /* PersistenceKit in Frameworks */ = {isa = PBXBuildFile; productRef = 2A27520A8D6C6FAE54723038 /* PersistenceKit */; };
 		28BF18AF731C5DE8FC05D43B /* EngineOpponent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 50FAEB7669FBE7B15EB85A56 /* EngineOpponent.swift */; };
 		29B0166D044AD2690B11E3FC /* RatingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A4856FB637E078C558B6C0B /* RatingTests.swift */; };
+		3258B26934F50C7CAB1E6308 /* AnalysisPrefetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353EE908401E16FAD9D2F29 /* AnalysisPrefetcher.swift */; };
 		327B4F145F5D01DD189C2CAE /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BD50F20090FD2501064D29 /* SettingsScreen.swift */; };
 		3304794CA2D02634A9A039EE /* RatingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3669865EDEC20BDD5F237D5 /* RatingStore.swift */; };
 		39EABF381E9523B7E99886CF /* ClockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 080C07EF6CA7F8DF1BA86BA4 /* ClockView.swift */; };
@@ -102,6 +103,7 @@
 		2EE12846F7E4FC7ACC4652A8 /* Chessmaster.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Chessmaster.entitlements; sourceTree = "<group>"; };
 		31B14C01D3B7B71E766D5DE3 /* LessonScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonScreen.swift; sourceTree = "<group>"; };
 		32338B9CDEF92C6560367E7B /* Chessmaster.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Chessmaster.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		3353EE908401E16FAD9D2F29 /* AnalysisPrefetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisPrefetcher.swift; sourceTree = "<group>"; };
 		3E9C1AB0E8619BEF579ED557 /* AnalysisKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AnalysisKit; path = Packages/AnalysisKit; sourceTree = SOURCE_ROOT; };
 		41D121DD055D51BACB66F9F9 /* PersistenceKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = PersistenceKit; path = Packages/PersistenceKit; sourceTree = SOURCE_ROOT; };
 		4A63FC7E699AF543CC54016D /* nn-37f18f62d772.nnue */ = {isa = PBXFileReference; path = "nn-37f18f62d772.nnue"; sourceTree = "<group>"; };
@@ -380,6 +382,7 @@
 		F98DCAD848A1B075BFDC7837 /* Game */ = {
 			isa = PBXGroup;
 			children = (
+				3353EE908401E16FAD9D2F29 /* AnalysisPrefetcher.swift */,
 				080C07EF6CA7F8DF1BA86BA4 /* ClockView.swift */,
 				50FAEB7669FBE7B15EB85A56 /* EngineOpponent.swift */,
 				7E7E9AA29FB65B0FF792B46F /* GamePersistence.swift */,
@@ -515,6 +518,7 @@
 			files = (
 				6029230A4576AC5EE83AA9E6 /* AccountSheet.swift in Sources */,
 				4CCCA48C93366DE1F187A822 /* AdaptiveLevel.swift in Sources */,
+				3258B26934F50C7CAB1E6308 /* AnalysisPrefetcher.swift in Sources */,
 				8C00973F7EFB38233D02E77E /* AnalysisScreen.swift in Sources */,
 				DC1BABF7DCA7FD3D3705C2B6 /* AnalysisViewModel.swift in Sources */,
 				410328E5D34AC424A2EBC56D /* AppPaywall.swift in Sources */,
@@ -616,7 +620,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 45;
+				CURRENT_PROJECT_VERSION = 46;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = BD3U76LB98;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -721,7 +725,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 45;
+				CURRENT_PROJECT_VERSION = 46;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = BD3U76LB98;
 				ENABLE_NS_ASSERTIONS = NO;

@@ -37,6 +37,8 @@ final class GameViewModel {
     private var container: DependencyContainer?
     private var eventTask: Task<Void, Never>?
     private var lowTimeTask: Task<Void, Never>?
+    /// Warms the eval cache during play so post-game analysis opens fast.
+    private var prefetcher: AnalysisPrefetcher?
     private let gameID = UUID().uuidString
     private let startedAt = Date.now
     /// How this game began, for analytics: fresh start, resumed save, or
@@ -117,6 +119,7 @@ final class GameViewModel {
             clock?.start(session.sideToMove.clockSide)
             startLowTimeWatcher()
             container?.sync.track("game_start", analyticsGameProps)
+            startPrefetch()
         case .movePlayed(let move):
             clock?.press(move.mover.clockSide)
             audio?.play(soundEffect(for: move))
@@ -128,7 +131,12 @@ final class GameViewModel {
             if session.isUserControlled(move.mover) {
                 firstMoveAbortTask?.cancel()
             }
+            // Warm the position we just reached, then hand the engine back to
+            // whoever moves next (the opponent gets priority).
+            prefetcher?.enqueue(fen: session.currentFEN)
+            updatePrefetchTurn()
         case .gameEnded(let result):
+            prefetcher?.stop()
             clock?.stop()
             lowTimeTask?.cancel()
             firstMoveAbortTask?.cancel()
@@ -197,8 +205,30 @@ final class GameViewModel {
         runPostGameAnalysis(record: record)
     }
 
-    /// Premium: runs the on-device blunder-check automatically after every
-    /// real game, so insights are ready to show without digging for them.
+    /// Spins up the background eval prefetcher for a fresh game and warms the
+    /// starting position. Skipped for training games (never analyzed).
+    private func startPrefetch() {
+        guard !isTraining, let prefetcher = AnalysisPrefetcher() else { return }
+        self.prefetcher = prefetcher
+        prefetcher.reset()
+        prefetcher.enqueue(fen: session.currentFEN)
+        updatePrefetchTurn()
+    }
+
+    /// Prefetch only while the engine is otherwise idle: run during the user's
+    /// thinking time, pause the moment it's the engine opponent's turn.
+    private func updatePrefetchTurn() {
+        guard let prefetcher else { return }
+        if session.isUserControlled(session.sideToMove) {
+            prefetcher.resume()
+        } else {
+            prefetcher.pause()
+        }
+    }
+
+    /// Runs the on-device engine analysis automatically after every real game,
+    /// so insights are ready to show without digging for them. Engine analysis
+    /// is free for everyone; the AI report inside it is the paywall.
     private func runPostGameAnalysis(record: GameRecord) {
         // Engine analysis is free for everyone; the AI report inside is the
         // paywall. Skip only training games and games too short to analyze.

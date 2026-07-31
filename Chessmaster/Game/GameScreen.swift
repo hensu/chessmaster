@@ -189,6 +189,7 @@ struct GameScreen: View {
                             .frame(maxWidth: .infinity)
                     }
                     .buttonStyle(.bordered)
+                    .accessibilityIdentifier("resignButton")
                 }
             }
         }

@@ -52,6 +52,28 @@ public actor UCIEngine {
     private var commandFD: Int32 = -1
     private var currentOptions: [String: String] = [:]
 
+    // The engine has a single output mailbox and shared option/position
+    // state, so a whole transaction (options → position → go → bestmove)
+    // must run without another transaction interleaving. This async lock
+    // serializes transactions, which is what lets background analysis share
+    // the engine safely with live opponent play.
+    private var locked = false
+    private var lockWaiters: [CheckedContinuation<Void, Never>] = []
+
+    private func acquireLock() async {
+        if !locked { locked = true; return }
+        await withCheckedContinuation { lockWaiters.append($0) }
+    }
+    private func releaseLock() {
+        if lockWaiters.isEmpty { locked = false }
+        else { lockWaiters.removeFirst().resume() }
+    }
+    private func withLock<T>(_ body: () async throws -> T) async rethrows -> T {
+        await acquireLock()
+        defer { releaseLock() }
+        return try await body()
+    }
+
     // Line mailbox: one detached reader task pushes engine output here;
     // `nextLine` consumers pop (or park a continuation when empty).
     private var pendingLines: [String] = []
@@ -66,38 +88,48 @@ public actor UCIEngine {
     /// Safe to call repeatedly.
     public func startIfNeeded(evalFileBig: URL, evalFileSmall: URL) async throws {
         guard !started else { return }
-        guard cm_stockfish_start() == 0 else { throw UCIEngineError.startFailed }
-        let handle = FileHandle(fileDescriptor: cm_stockfish_output_fd(), closeOnDealloc: false)
-        commandFD = cm_stockfish_command_fd()
-        readerTask = Task.detached { [weak self] in
-            do {
-                for try await line in handle.bytes.lines {
-                    await self?.deliver(line)
-                }
-            } catch {}
-            await self?.deliver(nil)
-        }
-        started = true
+        try await withLock {
+            guard !started else { return }   // re-check: a concurrent caller may have started it
+            guard cm_stockfish_start() == 0 else { throw UCIEngineError.startFailed }
+            let handle = FileHandle(fileDescriptor: cm_stockfish_output_fd(), closeOnDealloc: false)
+            commandFD = cm_stockfish_command_fd()
+            readerTask = Task.detached { [weak self] in
+                do {
+                    for try await line in handle.bytes.lines {
+                        await self?.deliver(line)
+                    }
+                } catch {}
+                await self?.deliver(nil)
+            }
+            started = true
 
-        send("uci")
-        _ = try await waitFor(timeoutMs: 5000, command: "uci") { $0 == "uciok" }
-        send("setoption name EvalFile value \(evalFileBig.path)")
-        send("setoption name EvalFileSmall value \(evalFileSmall.path)")
-        send("setoption name Threads value 2")
-        send("setoption name Hash value 32")
-        try await sync()
+            send("uci")
+            _ = try await waitFor(timeoutMs: 5000, command: "uci") { $0 == "uciok" }
+            send("setoption name EvalFile value \(evalFileBig.path)")
+            send("setoption name EvalFileSmall value \(evalFileSmall.path)")
+            send("setoption name Threads value 2")
+            send("setoption name Hash value 32")
+            try await syncLocked()
+        }
     }
 
     /// Blocks until the engine has processed everything sent so far.
     public func sync() async throws {
+        try await withLock { try await syncLocked() }
+    }
+
+    /// `sync()` core; the caller must already hold the lock.
+    private func syncLocked() async throws {
         send("isready")
         _ = try await waitFor(timeoutMs: 10000, command: "isready") { $0 == "readyok" }
     }
 
     public func newGame() async throws {
         try ensureStarted()
-        send("ucinewgame")
-        try await sync()
+        try await withLock {
+            send("ucinewgame")
+            try await syncLocked()
+        }
     }
 
     /// Interrupts a running search (e.g. when backgrounding).
@@ -110,64 +142,90 @@ public actor UCIEngine {
 
     public func apply(options: [String: String]) async throws {
         try ensureStarted()
+        try await withLock {
+            if applyOptionsLocked(options) { try await syncLocked() }
+        }
+    }
+
+    /// Sends option diffs synchronously (no `isready`). The engine processes
+    /// `setoption` before any following `position`/`go` sent in the same
+    /// critical section, so folding options into a search keeps the whole
+    /// transaction atomic. Returns whether anything changed. Lock required.
+    @discardableResult
+    private func applyOptionsLocked(_ options: [String: String]) -> Bool {
         var changed = false
         for (name, value) in options.sorted(by: { $0.key < $1.key }) where currentOptions[name] != value {
             send("setoption name \(name) value \(value)")
             currentOptions[name] = value
             changed = true
         }
-        if changed { try await sync() }
+        return changed
     }
 
     // MARK: - Search
 
     /// Search a position given by FEN. `movetimeMs` bounds wall time;
     /// `depth` optionally caps depth (whichever stops first).
-    public func search(fen: String, movetimeMs: Int, depth: Int? = nil) async throws -> SearchResult {
+    /// - Parameter options: engine options to apply atomically for this
+    ///   search (e.g. Skill Level). `MultiPV` is forced to 1 so the returned
+    ///   score is always the principal line, regardless of prior state.
+    public func search(
+        fen: String, movetimeMs: Int, depth: Int? = nil, options: [String: String] = [:]
+    ) async throws -> SearchResult {
         try ensureStarted()
-        send("position fen \(fen)")
-        var go = "go movetime \(movetimeMs)"
-        if let depth { go += " depth \(depth)" }
-        send(go)
+        return try await withLock {
+            var opts = options
+            opts["MultiPV"] = "1"
+            applyOptionsLocked(opts)
+            pendingLines.removeAll()   // drop stale output from any prior transaction
+            send("position fen \(fen)")
+            var go = "go movetime \(movetimeMs)"
+            if let depth { go += " depth \(depth)" }
+            send(go)
 
-        var lastInfo = SearchInfo()
-        let line = try await waitFor(timeoutMs: movetimeMs + 10000, command: go) { line in
-            if line.hasPrefix("info "), let parsed = Self.parseInfo(line) {
-                lastInfo = parsed
+            var lastInfo = SearchInfo()
+            let line = try await waitFor(timeoutMs: movetimeMs + 10000, command: go) { line in
+                if line.hasPrefix("info "), let parsed = Self.parseInfo(line) {
+                    lastInfo = parsed
+                }
+                return line.hasPrefix("bestmove")
             }
-            return line.hasPrefix("bestmove")
+            let parts = line.split(separator: " ")
+            guard parts.count >= 2, parts[1] != "(none)" else { throw UCIEngineError.noBestMove }
+            return SearchResult(bestMoveUCI: String(parts[1]), info: lastInfo)
         }
-        let parts = line.split(separator: " ")
-        guard parts.count >= 2, parts[1] != "(none)" else { throw UCIEngineError.noBestMove }
-        return SearchResult(bestMoveUCI: String(parts[1]), info: lastInfo)
     }
 
     /// MultiPV search: the engine's top candidate moves with evaluations,
-    /// deepest iteration wins. MultiPV is reset to 1 afterwards so other
-    /// consumers (analysis, single-move search) are unaffected.
+    /// deepest iteration wins. Each search sets its own MultiPV, so no reset
+    /// is needed — a following single-line `search` forces MultiPV back to 1.
     public func searchCandidates(
-        fen: String, movetimeMs: Int, depth: Int? = nil, count: Int
+        fen: String, movetimeMs: Int, depth: Int? = nil, count: Int,
+        options: [String: String] = [:]
     ) async throws -> [CandidateMove] {
         try ensureStarted()
-        try await apply(options: ["MultiPV": "\(count)"])
-        defer { Task { try? await self.apply(options: ["MultiPV": "1"]) } }
+        return try await withLock {
+            var opts = options
+            opts["MultiPV"] = "\(count)"
+            applyOptionsLocked(opts)
+            pendingLines.removeAll()   // drop stale output from any prior transaction
+            send("position fen \(fen)")
+            var go = "go movetime \(movetimeMs)"
+            if let depth { go += " depth \(depth)" }
+            send(go)
 
-        send("position fen \(fen)")
-        var go = "go movetime \(movetimeMs)"
-        if let depth { go += " depth \(depth)" }
-        send(go)
-
-        var byRank: [Int: SearchInfo] = [:]
-        _ = try await waitFor(timeoutMs: movetimeMs + 10000, command: go) { line in
-            if line.hasPrefix("info "), let parsed = Self.parseInfo(line),
-               !parsed.pv.isEmpty {
-                byRank[parsed.multipv ?? 1] = parsed
+            var byRank: [Int: SearchInfo] = [:]
+            _ = try await waitFor(timeoutMs: movetimeMs + 10000, command: go) { line in
+                if line.hasPrefix("info "), let parsed = Self.parseInfo(line),
+                   !parsed.pv.isEmpty {
+                    byRank[parsed.multipv ?? 1] = parsed
+                }
+                return line.hasPrefix("bestmove")
             }
-            return line.hasPrefix("bestmove")
-        }
-        return byRank.keys.sorted().compactMap { rank in
-            guard let info = byRank[rank], let move = info.pv.first else { return nil }
-            return CandidateMove(moveUCI: move, scoreCp: info.scoreCp, scoreMate: info.scoreMate)
+            return byRank.keys.sorted().compactMap { rank in
+                guard let info = byRank[rank], let move = info.pv.first else { return nil }
+                return CandidateMove(moveUCI: move, scoreCp: info.scoreCp, scoreMate: info.scoreMate)
+            }
         }
     }
 
