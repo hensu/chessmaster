@@ -239,7 +239,7 @@ struct AnalysisScreen: View {
                     model.requestCoaching()
                 } label: {
                     Label(
-                        model.isPremium ? "Ask Chess AI" : "Ask Chess AI (Premium)",
+                        model.isPremium ? "Coach this game" : "Coach this game (Premium)",
                         systemImage: model.isPremium ? "sparkles" : "crown.fill"
                     )
                     .font(.subheadline.weight(.medium))
@@ -326,7 +326,7 @@ struct AnalysisScreen: View {
                         model.requestCoaching()
                     } label: {
                         Label(
-                            model.isPremium ? "Ask Chess AI" : "Ask Chess AI (Premium)",
+                            model.isPremium ? "Coach this game" : "Coach this game (Premium)",
                             systemImage: model.isPremium ? "sparkles" : "crown.fill"
                         )
                         .frame(maxWidth: .infinity)

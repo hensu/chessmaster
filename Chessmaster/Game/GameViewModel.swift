@@ -200,8 +200,9 @@ final class GameViewModel {
     /// Premium: runs the on-device blunder-check automatically after every
     /// real game, so insights are ready to show without digging for them.
     private func runPostGameAnalysis(record: GameRecord) {
-        guard container?.entitlements.isPremium == true,
-              !isTraining,
+        // Engine analysis is free for everyone; the AI report inside is the
+        // paywall. Skip only training games and games too short to analyze.
+        guard !isTraining,
               session.moveHistory.count >= 4,
               let big = StockfishNets.big, let small = StockfishNets.small
         else { return }

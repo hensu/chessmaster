@@ -146,7 +146,7 @@ struct GameScreen: View {
                         .multilineTextAlignment(.center)
                     HStack(spacing: 8) {
                         ProgressView().controlSize(.small)
-                        Text("Chess AI is reviewing your game…")
+                        Text("Analyzing your game…")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
                     }
@@ -289,36 +289,23 @@ struct GameOverSheet: View {
                 }
             } else if model.savedGameRecord != nil {
                 // The hero CTA (chess.com-style): the review is the product.
-                if container.entitlements.isPremium {
-                    Button {
-                        container.sync.track("insights_tapped", ["premium": "true"])
-                        dismissSheet()
-                        onAnalyze()
-                    } label: {
-                        Text("Game Review")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 4)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.green)
-                    .controlSize(.large)
-                    .padding(.horizontal)
-                } else {
-                    Button {
-                        container.sync.track("insights_tapped", ["premium": "false"])
-                        showPaywall = true
-                    } label: {
-                        Label("Game Review (Premium)", systemImage: "crown.fill")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 4)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.green)
-                    .controlSize(.large)
-                    .padding(.horizontal)
+                // Engine analysis is free; the AI coach lives (paywalled)
+                // inside. Everyone can open the review.
+                Button {
+                    container.sync.track("insights_tapped",
+                        ["premium": container.entitlements.isPremium ? "true" : "false"])
+                    dismissSheet()
+                    onAnalyze()
+                } label: {
+                    Text("Review game")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 4)
                 }
+                .buttonStyle(.borderedProminent)
+                .tint(.green)
+                .controlSize(.large)
+                .padding(.horizontal)
             }
 
             HStack(spacing: 12) {
