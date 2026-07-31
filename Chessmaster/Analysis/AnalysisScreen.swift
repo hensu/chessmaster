@@ -321,7 +321,9 @@ struct AnalysisScreen: View {
                 }
                 // The mistake card carries the "Ask Chess AI" entry point;
                 // this one only appears for games with no flagged mistakes.
-                if model.coachingAvailable {
+                // Only for games with no flagged mistakes — otherwise the
+                // mistake-review card already carries this button.
+                if model.userMistakes.isEmpty, model.coachingAvailable {
                     Button {
                         model.requestCoaching()
                     } label: {

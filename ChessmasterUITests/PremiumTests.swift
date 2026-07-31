@@ -2,21 +2,28 @@
 import XCTest
 
 final class PremiumTests: XCTestCase {
-    /// A free user tapping the coaching button gets the paywall.
+    /// Free users get the engine analysis for free after a game, but the AI
+    /// coach is a hard paywall.
     @MainActor
-    func testCoachingButtonShowsPaywallForFreeUsers() throws {
+    func testFreeUserGetsAnalysisButCoachIsPaywalled() throws {
         let app = XCUIApplication()
-        app.launchArguments = ["--autostart-game", "--uitest"]
+        app.launchArguments = ["--autostart-game", "--uitest"]  // no --premium
         app.launch()
         try Self.playScholarsMate(app)
 
-        // Free users: no auto-insights — the game-over sheet offers a
-        // locked button that opens the paywall.
-        let locked = app.buttons["Game Review (Premium)"]
-        XCTAssertTrue(locked.waitForExistence(timeout: 10))
-        locked.tap()
+        // Engine analysis auto-opens for free users (no premium gate).
+        XCTAssertTrue(app.navigationBars["Analysis"].waitForExistence(timeout: 60),
+                      "free users should get engine analysis after a game")
+
+        // The AI report is locked: the button is marked Premium and taps
+        // through to the paywall.
+        let coach = app.buttons["Coach this game (Premium)"]
+        XCTAssertTrue(coach.waitForExistence(timeout: 10),
+                      "AI coaching should be labeled Premium for free users")
+        if !coach.isHittable { app.swipeUp() }
+        coach.tap()
         XCTAssertTrue(app.staticTexts["Choose your coach"].waitForExistence(timeout: 5),
-                      "paywall should appear for free users")
+                      "tapping the AI coach should show the paywall")
     }
 
     /// A premium user can launch retry-training from the worst moment.
