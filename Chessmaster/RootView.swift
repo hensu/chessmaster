@@ -13,6 +13,8 @@ struct RootView: View {
     /// user who hasn't finished the quiz; sign-in afterwards lives in
     /// Profile → Account.
     @State private var onboarded = UserDefaults.standard.bool(forKey: "onboarding.quizDone")
+    /// Handles taps on local notifications (attribution + routing).
+    @State private var notifications: NotificationCoordinator?
 
     private var showWelcome: Bool {
         let arguments = ProcessInfo.processInfo.arguments
@@ -71,6 +73,12 @@ struct RootView: View {
             // Streak reminders stay accurate even if the app wasn't opened
             // via a game (e.g. reinstall, day change).
             StreakNotifier.refresh(games: (try? container.games.recentGames()) ?? [])
+            // Route notification taps, and (re)arm re-engagement nudges — a
+            // launch means the user is back, so the cascade resets from now.
+            if notifications == nil {
+                notifications = NotificationCoordinator(router: router, sync: container.sync)
+            }
+            ReengagementNotifier.refresh(container: container)
             // UI tests: establish a session without the sign-in UI.
             // The fixed account is pre-provisioned (and pre-entitled) in the
             // backend, so live tests never depend on keychain persistence.

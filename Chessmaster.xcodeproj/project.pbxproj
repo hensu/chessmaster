@@ -15,6 +15,7 @@
 		11FF51C3F615DFE8ACE11334 /* SignupNudge.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84F17D5931B0034CC30D7FD /* SignupNudge.swift */; };
 		14C5DD2E1DA64079408DA5D5 /* CoachVoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5D22028A8E74E099AA3912D /* CoachVoice.swift */; };
 		1530D59563962BFA7EBB11E4 /* GamePersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E7E9AA29FB65B0FF792B46F /* GamePersistence.swift */; };
+		19DB343921A76C329AE6D5A7 /* ReengagementNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C4B17CD8C7533EF083CE7C6 /* ReengagementNotifier.swift */; };
 		1C15A204DE9A5C82FE0F1661 /* LiveBackendTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 01D4C1A10BC55419D63A6B5F /* LiveBackendTests.swift */; };
 		1E68B4E43158038E785D5EA1 /* WelcomeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CA68C5D9F7B60986D8A9507 /* WelcomeScreen.swift */; };
 		21F52770139B8D2C503E7697 /* PuzzleScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 06D4C48B867F24E431B1BCB6 /* PuzzleScreen.swift */; };
@@ -59,6 +60,7 @@
 		BAE28381B2DFF961BEC7F67A /* GameScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58A74804DCE63A42044C2462 /* GameScreen.swift */; };
 		BD4B1A232FC03839B241CA33 /* HistoryScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14CE24946890871755478E46 /* HistoryScreen.swift */; };
 		C6E025F78BECB4593428EC6B /* PlayFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2DA50D27BA130D5806655A0C /* PlayFlowTests.swift */; };
+		C84489BB057E4D497C096492 /* NotificationCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99160096A3BF1920CDB38A02 /* NotificationCoordinator.swift */; };
 		CF2E9D0E1D2E1BA8233EE2AA /* BoardUI in Frameworks */ = {isa = PBXBuildFile; productRef = CC9B9CFB2ACBEA5509EF2EED /* BoardUI */; };
 		D51FE33F7DEE4493B91D8EAC /* EnginePlayTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4DFCEE59B15A9BE24C323365 /* EnginePlayTests.swift */; };
 		D6569EF6B7182F36D16630A4 /* Streaks.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A4373C3941BCF1D6A1BE94A /* Streaks.swift */; };
@@ -91,6 +93,7 @@
 		0864AB3D33FFB8F751F67B0B /* AccountSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AccountSheet.swift; sourceTree = "<group>"; };
 		0898120F898BC2FA8E1FEFC0 /* BoardUI */ = {isa = PBXFileReference; lastKnownFileType = folder; name = BoardUI; path = Packages/BoardUI; sourceTree = SOURCE_ROOT; };
 		0C44A4607B0F47C828758447 /* EngineKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = EngineKit; path = Packages/EngineKit; sourceTree = SOURCE_ROOT; };
+		0C4B17CD8C7533EF083CE7C6 /* ReengagementNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReengagementNotifier.swift; sourceTree = "<group>"; };
 		14CE24946890871755478E46 /* HistoryScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryScreen.swift; sourceTree = "<group>"; };
 		153C13EF98CD078C7B8BB360 /* LearnScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearnScreen.swift; sourceTree = "<group>"; };
 		19FDD251C700D104CDBA1634 /* nn-c288c895ea92.nnue */ = {isa = PBXFileReference; path = "nn-c288c895ea92.nnue"; sourceTree = "<group>"; };
@@ -127,6 +130,7 @@
 		95BD50F20090FD2501064D29 /* SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScreen.swift; sourceTree = "<group>"; };
 		96660EAE8577AC99DD613CBA /* ClockKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ClockKit; path = Packages/ClockKit; sourceTree = SOURCE_ROOT; };
 		98C8FA9D7BDE02060B9FE6CB /* PlayerReviewModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayerReviewModels.swift; sourceTree = "<group>"; };
+		99160096A3BF1920CDB38A02 /* NotificationCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationCoordinator.swift; sourceTree = "<group>"; };
 		9A4373C3941BCF1D6A1BE94A /* Streaks.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Streaks.swift; sourceTree = "<group>"; };
 		9C90C6BEC5D4C976B91B3B43 /* DependencyContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DependencyContainer.swift; sourceTree = "<group>"; };
 		9CA68C5D9F7B60986D8A9507 /* WelcomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeScreen.swift; sourceTree = "<group>"; };
@@ -211,6 +215,7 @@
 				97BAEEDB704CD0774D4C6836 /* History */,
 				20ADBE5CBE9B0A4CF71A15A0 /* Home */,
 				F223BBF6D3138E197810F490 /* Learn */,
+				6DAB55E62129C6587940F5D4 /* Notifications */,
 				8D369004617489B92C8E4DE3 /* Onboarding */,
 				07467D1555C824D7D2066D7E /* Paywall */,
 				0C5F782AE5B28E726376EF95 /* Profile */,
@@ -267,6 +272,15 @@
 				AE6FB886DCA14BA253721BAF /* Packages */,
 				BCC2BC16222A8D786F94EBDC /* Products */,
 			);
+			sourceTree = "<group>";
+		};
+		6DAB55E62129C6587940F5D4 /* Notifications */ = {
+			isa = PBXGroup;
+			children = (
+				99160096A3BF1920CDB38A02 /* NotificationCoordinator.swift */,
+				0C4B17CD8C7533EF083CE7C6 /* ReengagementNotifier.swift */,
+			);
+			path = Notifications;
 			sourceTree = "<group>";
 		};
 		83AFE8560CDFF2453CF6C35E /* Settings */ = {
@@ -540,10 +554,12 @@
 				E552E5774E8FCA7C659C2C0F /* LearnModels.swift in Sources */,
 				3DAE95ECEAB971DB62941656 /* LearnScreen.swift in Sources */,
 				4A66156D57D8DD6CBA4B3627 /* LessonScreen.swift in Sources */,
+				C84489BB057E4D497C096492 /* NotificationCoordinator.swift in Sources */,
 				B6C45E601ECEBB356336BDDB /* PlayerReviewModels.swift in Sources */,
 				DE36ACB41237FB84CDF0E3D4 /* ProfileScreen.swift in Sources */,
 				21F52770139B8D2C503E7697 /* PuzzleScreen.swift in Sources */,
 				3304794CA2D02634A9A039EE /* RatingStore.swift in Sources */,
+				19DB343921A76C329AE6D5A7 /* ReengagementNotifier.swift in Sources */,
 				B7EB9FFA98E5C631544026AD /* RootView.swift in Sources */,
 				327B4F145F5D01DD189C2CAE /* SettingsScreen.swift in Sources */,
 				11FF51C3F615DFE8ACE11334 /* SignupNudge.swift in Sources */,

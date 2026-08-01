@@ -155,6 +155,7 @@ final class GameViewModel {
                 if let games = try? container?.games.recentGames() {
                     StreakNotifier.refresh(games: games)
                 }
+                if let container { ReengagementNotifier.refresh(container: container) }
                 // Decisive games go straight to the analysis review; the
                 // sheet only appears when no auto-analysis is coming.
                 showGameOver = !preparingInsights

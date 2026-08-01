@@ -59,6 +59,13 @@ service this client talks to.
 - Every hit carries user properties: `signed_in`, `premium` (RootView keeps it current), and `flag_<key>` for each feature flag. New event params must be registered as GA4 custom dimensions (Admin) to appear outside Realtime.
 - Feature flags / A/B: `app_config` table (migration 0008; key/enabled/ab_split, dashboard-managed, read-only to clients). Gate UI with `container.sync.flag("key")`. `ab_split=true` → stable per-install 50/50 variant. Keys ≤19 chars (GA property-name cap). Cached in UserDefaults `flags.cache`; refreshed at launch in RootView.
 
+## Notifications
+
+- All **local** (no push/APNs yet). Two schedulers, both skip `--uitest`, both fire at the player's median play hour:
+  - `StreakNotifier` — evening streak-saver + next-morning milestone, only when a streak (≥2) exists (asks full permission then).
+  - `ReengagementNotifier` (`Chessmaster/Notifications/`) — "come back" nudges for lapsed users, personalized from on-device data (near a level-up, last-game loss, favorite time control, unsolved puzzle category, rating). Cadence: day 3/7/14/30 for everyone, plus ~quarterly (120/210/300/390) **for paid users only**. Requests **provisional** authorization (quiet, no prompt). (Re)scheduled from *now* on launch, on background (`ChessmasterApp` scenePhase), and after each game — returning resets the cascade. `NotificationCoordinator` handles taps → tracks `reengage_opened` (params `reason`,`tier`) and routes to Play.
+- Phase 2 (server push via APNs + Supabase cron, richer server-side personalization for signed-in users) is designed but NOT built — needs an APNs auth key + a new build.
+
 ## Learn tab (puzzles + lessons)
 
 - `Chessmaster/Learn/` — LearnScreen (tab root), PuzzleScreen/PuzzleViewModel, LessonScreen/LessonViewModel, LearnModels (content loaders + LearnProgress in UserDefaults).

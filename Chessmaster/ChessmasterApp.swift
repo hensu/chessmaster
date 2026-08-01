@@ -30,6 +30,9 @@ struct ChessmasterApp: App {
             // Stockfish burns CPU; never leave a search running in background.
             if phase == .background {
                 Task { await UCIEngine.shared.stopSearch() }
+                // Leaving the app is the moment to (re)arm "come back" nudges,
+                // measured from now, so they only fire if the user stays away.
+                ReengagementNotifier.refresh(container: container)
             }
         }
     }
