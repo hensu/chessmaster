@@ -37,8 +37,11 @@ final class DependencyContainer {
         // Anyone signed in syncs (free or premium); playing without an
         // account stays fully local.
         Task { [sync, entitlements] in
-            await entitlements.refresh()
+            // Resolve sign-in FIRST — it's a fast local/session read, whereas
+            // the StoreKit entitlement refresh can be slow. Doing it first
+            // stops sign-in prompts from flashing for an already-signed-in user.
             await sync.restoreSession()
+            await entitlements.refresh()
             await sync.pushPending()
         }
     }

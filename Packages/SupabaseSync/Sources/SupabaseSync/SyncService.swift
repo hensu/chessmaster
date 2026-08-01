@@ -44,6 +44,10 @@ public final class SyncService {
 
     public private(set) var state: SyncState
     public private(set) var userID: UUID?
+    /// False until `restoreSession()` has run at least once. Sign-in prompts
+    /// must wait for this — before it's true, `isSignedIn` is simply unknown,
+    /// not "signed out", so prompting would be wrong.
+    public private(set) var sessionRestored = false
 
     private let client: SupabaseClient?
     private let games: GameRepository
@@ -116,11 +120,19 @@ public final class SyncService {
         return hash % 2 == 0
     }
 
-    /// Restores an existing session (call at launch).
+    /// Restores an existing session (call at launch). Sets `sessionRestored`
+    /// when done so prompts know the auth state is now settled.
     public func restoreSession() async {
+        defer { sessionRestored = true }
         guard let client else { return }
         if let session = try? await client.auth.session {
             userID = session.user.id
+            state = .idle
+        } else if let stored = client.auth.currentSession {
+            // The refresh failed (e.g. launched offline) but a session is
+            // still stored locally — keep the user signed in rather than
+            // falsely prompting them to sign in. A later online refresh heals.
+            userID = stored.user.id
             state = .idle
         }
     }

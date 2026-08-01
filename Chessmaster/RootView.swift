@@ -19,7 +19,10 @@ struct RootView: View {
         if arguments.contains("--reset-welcome") { return !skippedSignIn }
         if arguments.contains("--uitest") { return false }
         if arguments.contains(where: { $0.hasPrefix("--autostart") }) { return false }
-        return !onboarded && !skippedSignIn && !container.sync.isSignedIn && container.sync.isConfigured
+        // Wait until the session restore has settled — before that,
+        // isSignedIn is unknown, and prompting a signed-in user is the bug.
+        return container.sync.sessionRestored
+            && !onboarded && !skippedSignIn && !container.sync.isSignedIn && container.sync.isConfigured
     }
 
     private var colorScheme: ColorScheme? {

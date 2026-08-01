@@ -151,18 +151,12 @@ struct HomeScreen: View {
             if let config = autoStartConfig, pendingConfig == nil {
                 pendingConfig = config
             }
-            // Save-your-progress nudge: only when signed out AND there's
-            // something on this phone worth keeping (see SignupNudge).
-            if pendingConfig == nil, signupPrompt == nil,
-               let prompt = SignupNudge.evaluate(
-                   games: games,
-                   isSignedIn: container.sync.isSignedIn,
-                   isConfigured: container.sync.isConfigured,
-                   rating: establishedRating()
-               ) {
-                signupPrompt = prompt
-                container.sync.track("signup_nudge_shown", ["trigger": prompt.trigger])
-            }
+            evaluateSignupNudge()
+        }
+        // The nudge waits for the session restore to settle; when it does,
+        // re-check (onAppear may have run while auth was still unknown).
+        .onChange(of: container.sync.sessionRestored) { _, _ in
+            evaluateSignupNudge()
         }
         .sheet(item: $signupPrompt, onDismiss: {
             if nudgeAccepted {
@@ -181,6 +175,24 @@ struct HomeScreen: View {
         .sheet(isPresented: $showNudgeAccountSheet) {
             AccountSheet(sync: container.sync)
         }
+    }
+
+    /// Save-your-progress nudge: only once the session restore has settled,
+    /// and only when signed out AND there's something on this phone worth
+    /// keeping (see SignupNudge). Gating on `sessionRestored` is what stops
+    /// the nudge from flashing at an already-signed-in user at launch.
+    private func evaluateSignupNudge() {
+        guard container.sync.sessionRestored,
+              pendingConfig == nil, signupPrompt == nil else { return }
+        let games = (try? container.games.recentGames()) ?? []
+        guard let prompt = SignupNudge.evaluate(
+            games: games,
+            isSignedIn: container.sync.isSignedIn,
+            isConfigured: container.sync.isConfigured,
+            rating: establishedRating()
+        ) else { return }
+        signupPrompt = prompt
+        container.sync.track("signup_nudge_shown", ["trigger": prompt.trigger])
     }
 
     // MARK: - Per-game overrides (defaults live in Profile)
