@@ -120,6 +120,38 @@ public final class SyncService {
         return hash % 2 == 0
     }
 
+    /// True once this device's APNs token is stored server-side, so the
+    /// backend push service can reach this user — the client then leaves
+    /// re-engagement to the server instead of scheduling local notifications.
+    public private(set) var hasRemoteToken = false
+    private var deviceTokenHex: String?
+
+    /// Upsert this device's APNs token so the re-engagement push job can reach
+    /// the signed-in user. No-op when signed out (push targets accounts).
+    public func registerDeviceToken(_ hex: String, environment: String, tz: String, locale: String) async {
+        guard let client, let userID else { return }
+        deviceTokenHex = hex
+        struct Row: Encodable {
+            let user_id: String
+            let token: String
+            let platform: String
+            let environment: String
+            let tz: String
+            let locale: String
+            let updated_at: String
+        }
+        let row = Row(
+            user_id: userID.uuidString, token: hex, platform: "ios",
+            environment: environment, tz: tz, locale: locale,
+            updated_at: ISO8601DateFormatter().string(from: Date()))
+        do {
+            try await client.from("device_tokens").upsert(row, onConflict: "token").execute()
+            hasRemoteToken = true
+        } catch {
+            hasRemoteToken = false
+        }
+    }
+
     /// Restores an existing session (call at launch). Sets `sessionRestored`
     /// when done so prompts know the auth state is now settled.
     public func restoreSession() async {
@@ -393,6 +425,13 @@ public final class SyncService {
     public func signOut() async {
         guard let client else { return }
         track("signed_out")   // before userID clears, so the hit carries it
+        // Stop push to this device for the account being left (leave other
+        // devices' tokens alone by matching only this one).
+        if let hex = deviceTokenHex {
+            try? await client.from("device_tokens").delete().eq("token", value: hex).execute()
+        }
+        hasRemoteToken = false
+        deviceTokenHex = nil
         try? await client.auth.signOut()
         userID = nil
         state = .signedOut

@@ -78,6 +78,16 @@ struct RootView: View {
             if notifications == nil {
                 notifications = NotificationCoordinator(router: router, sync: container.sync)
             }
+            // Forward the APNs token to the backend, and register signed-in
+            // users so the server re-engagement push can reach them.
+            PushAppDelegate.onToken = { hex in
+                Task {
+                    await container.sync.registerDeviceToken(
+                        hex, environment: Push.environment,
+                        tz: TimeZone.current.identifier, locale: Locale.current.identifier)
+                }
+            }
+            Push.registerIfSignedIn(container.sync)
             ReengagementNotifier.refresh(container: container)
             // UI tests: establish a session without the sign-in UI.
             // The fixed account is pre-provisioned (and pre-entitled) in the
@@ -117,6 +127,7 @@ struct RootView: View {
         }
         .onChange(of: container.sync.isSignedIn) { _, signedIn in
             guard signedIn else { return }
+            Push.registerIfSignedIn(container.sync)   // get a push token for the new session
             Task {
                 await container.entitlements.refresh()
                 if let jws = container.entitlements.latestTransactionJWS {

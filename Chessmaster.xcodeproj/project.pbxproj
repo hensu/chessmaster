@@ -71,6 +71,7 @@
 		DE36ACB41237FB84CDF0E3D4 /* ProfileScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1BF1679A3A674D050525CF9A /* ProfileScreen.swift */; };
 		DF798717EA9FCB33169C4019 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = BEDBA0AC7C245938919B8B14 /* GoogleSignIn */; };
 		E552E5774E8FCA7C659C2C0F /* LearnModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3C725C84F48E94CACE977D /* LearnModels.swift */; };
+		E5B215B3C064E59D4208205F /* PushRegistration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 909AD89092D6C75E48CFADBC /* PushRegistration.swift */; };
 		EB64CCFD387DAC5B01106BAE /* StockfishNets.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1727D1DE66BFC75B4B794D2 /* StockfishNets.swift */; };
 		FD885D1AA14F4B268A1BE0C7 /* PaywallKit in Frameworks */ = {isa = PBXBuildFile; productRef = CD6F22630D95EE1E9AC9C2A1 /* PaywallKit */; };
 /* End PBXBuildFile section */
@@ -125,6 +126,7 @@
 		8497047242D4B503E798971A /* PaywallKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = PaywallKit; path = Packages/PaywallKit; sourceTree = SOURCE_ROOT; };
 		8A4856FB637E078C558B6C0B /* RatingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatingTests.swift; sourceTree = "<group>"; };
 		8F0873660DC6098701DE61E9 /* ChessmasterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChessmasterApp.swift; sourceTree = "<group>"; };
+		909AD89092D6C75E48CFADBC /* PushRegistration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushRegistration.swift; sourceTree = "<group>"; };
 		91CCE434D516DEE5BC1A0B37 /* SupabaseSync */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SupabaseSync; path = Packages/SupabaseSync; sourceTree = SOURCE_ROOT; };
 		933FA84669B0812A7A075DC3 /* RootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RootView.swift; sourceTree = "<group>"; };
 		95BD50F20090FD2501064D29 /* SettingsScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsScreen.swift; sourceTree = "<group>"; };
@@ -278,6 +280,7 @@
 			isa = PBXGroup;
 			children = (
 				99160096A3BF1920CDB38A02 /* NotificationCoordinator.swift */,
+				909AD89092D6C75E48CFADBC /* PushRegistration.swift */,
 				0C4B17CD8C7533EF083CE7C6 /* ReengagementNotifier.swift */,
 			);
 			path = Notifications;
@@ -557,6 +560,7 @@
 				C84489BB057E4D497C096492 /* NotificationCoordinator.swift in Sources */,
 				B6C45E601ECEBB356336BDDB /* PlayerReviewModels.swift in Sources */,
 				DE36ACB41237FB84CDF0E3D4 /* ProfileScreen.swift in Sources */,
+				E5B215B3C064E59D4208205F /* PushRegistration.swift in Sources */,
 				21F52770139B8D2C503E7697 /* PuzzleScreen.swift in Sources */,
 				3304794CA2D02634A9A039EE /* RatingStore.swift in Sources */,
 				19DB343921A76C329AE6D5A7 /* ReengagementNotifier.swift in Sources */,

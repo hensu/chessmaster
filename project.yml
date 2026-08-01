@@ -97,6 +97,9 @@ targets:
       path: Chessmaster/Chessmaster.entitlements
       properties:
         com.apple.developer.applesignin: [Default]
+        # Push (re-engagement). "development" = sandbox APNs for dev/TestFlight
+        # testing; the App Store build needs "production".
+        aps-environment: development
     info:
       path: Chessmaster/Info.plist
       properties:

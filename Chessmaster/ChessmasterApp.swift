@@ -7,6 +7,7 @@ import GoogleSignIn
 struct ChessmasterApp: App {
     @State private var container = DependencyContainer()
     @Environment(\.scenePhase) private var scenePhase
+    @UIApplicationDelegateAdaptor(PushAppDelegate.self) private var pushDelegate
 
     init() {
         if ProcessInfo.processInfo.arguments.contains("--reset-welcome") {

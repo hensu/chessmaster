@@ -24,6 +24,12 @@ enum ReengagementNotifier {
 
     static func refresh(container: DependencyContainer) {
         guard !ProcessInfo.processInfo.arguments.contains("--uitest") else { return }
+        // Once the backend can push this signed-in user (token registered),
+        // the server owns re-engagement — don't also fire local ones.
+        if container.sync.isSignedIn, container.sync.hasRemoteToken {
+            cancelAll()
+            return
+        }
         let games = (try? container.games.recentGames()) ?? []
         let rating = container.ratings.ratings.values
             .filter { $0.deviation < 250 }
