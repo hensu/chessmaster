@@ -393,13 +393,12 @@ struct HomeScreen: View {
         guard levelMode == "auto" else {
             return .init(level: engineLevel, blunderProbability: 0)
         }
-        // Untimed games have no rating category — lean on the player's most
-        // established rating (lowest deviation) instead.
-        let rating = category.map { container.ratings.rating(for: $0) }
-            ?? container.ratings.ratings.values.min { $0.deviation < $1.deviation }
-            ?? Glicko2Rating()
-        let recent = (try? container.games.recentGames(limit: 10)) ?? []
-        return AdaptiveLevel.recommend(rating: rating, recentGames: recent)
+        // Untimed games share the classical bucket (that's how they're rated),
+        // so Auto level is tracked per category, classical standing in for both.
+        let cat = category ?? .classical
+        let rating = container.ratings.rating(for: cat)
+        let recent = (try? container.games.recentGames(limit: 20)) ?? []
+        return AdaptiveLevel.level(for: cat, rating: rating, recentGames: recent)
     }
 }
 

@@ -145,6 +145,17 @@ final class GameViewModel {
             if result != .aborted {
                 applyRating(for: result)
                 saveFinishedGame(result: result)
+                // Auto mode adapts the per-time-control level after each rated
+                // engine game: a completed win/loss streak nudges it ±1.
+                if ratingChange != nil, case .engine = session.config.opponent,
+                   (UserDefaults.standard.string(forKey: "play.levelMode") ?? "auto") == "auto" {
+                    let cat = session.config.timeControl?.category ?? .classical
+                    let outcome = normalizedResult(result)
+                    let didWin: Bool? = outcome == "win" ? true : outcome == "loss" ? false : nil
+                    AdaptiveLevel.recordResult(
+                        for: cat, didWin: didWin,
+                        seedRating: container?.ratings.rating(for: cat) ?? Glicko2Rating())
+                }
                 var props = analyticsGameProps
                 props["result"] = normalizedResult(result)
                 props["termination"] = result.terminationString

@@ -27,8 +27,8 @@ struct Streaks {
         // Win streak: most recent games first, count until the first non-win.
         var wins = 0
         for game in finished.sorted(by: { $0.endedAt > $1.endedAt }) {
-            let won = (game.result == "white_win" && game.playerColor == "white")
-                || (game.result == "black_win" && game.playerColor == "black")
+            let won = (game.result == "whiteWin" && game.playerColor == "white")
+                || (game.result == "blackWin" && game.playerColor == "black")
             if won { wins += 1 } else { break }
         }
 

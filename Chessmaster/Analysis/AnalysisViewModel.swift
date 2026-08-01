@@ -152,8 +152,8 @@ final class AnalysisViewModel {
         }
         trainingArrows = arrows
         let userIsWhite = game.playerColor != "black"
-        let userWon = (game.result == "white_win" && userIsWhite)
-            || (game.result == "black_win" && !userIsWhite)
+        let userWon = (game.result == "whiteWin" && userIsWhite)
+            || (game.result == "blackWin" && !userIsWhite)
         let outcome = game.result == "draw" ? "drew" : (userWon ? "won" : "went on to lose")
         var original = "Original game: you played \(playedSAN) here"
         if let drop = dropFor(ply: ply), drop >= 1 {
