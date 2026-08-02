@@ -14,6 +14,9 @@ struct AnalysisScreen: View {
     private let source: String
     /// onAppear re-fires when the training cover dismisses; count one open.
     @State private var trackedOpen = false
+    /// Drives the breathing emerald glow on the coaching CTA.
+    @State private var ctaGlow = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     init(game: GameRecord, openAtWorstMoment: Bool = false, source: String = "history") {
         _model = State(initialValue: AnalysisViewModel(game: game))
@@ -139,30 +142,51 @@ struct AnalysisScreen: View {
                 HStack(spacing: 12) {
                     Image(systemName: "sparkles")
                         .font(.title3.weight(.semibold))
+                        .foregroundStyle(Self.ctaEmerald)
                     VStack(alignment: .leading, spacing: 1) {
                         Text("Get AI Coaching")
                             .font(.headline)
+                            .foregroundStyle(.white)
                         Text(model.isPremium
                              ? "Personal notes on every mistake"
                              : "Personal notes on every mistake · Premium")
                             .font(.caption)
-                            .foregroundStyle(.white.opacity(0.9))
+                            .foregroundStyle(Self.ctaMint)
                     }
                     Spacer()
                     Image(systemName: model.isPremium ? "chevron.right" : "crown.fill")
                         .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(model.isPremium ? Self.ctaEmerald : Self.ctaGold)
                 }
-                .foregroundStyle(.white)
                 .padding(.horizontal, 18)
                 .padding(.vertical, 16)
                 .frame(maxWidth: .infinity, alignment: .leading)
-                .background(Color.green, in: RoundedRectangle(cornerRadius: 16))
+                .background(Self.ctaInk, in: RoundedRectangle(cornerRadius: 16))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .strokeBorder(Self.ctaEmerald.opacity(0.45), lineWidth: 1)
+                )
+                // Breathing emerald halo — draws the eye without a hard flash.
+                .shadow(color: Self.ctaEmerald.opacity(ctaGlow ? 0.55 : 0.22),
+                        radius: ctaGlow ? 20 : 9)
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("getAICoaching")
             .padding(.horizontal)
+            .onAppear {
+                guard !reduceMotion else { return }
+                withAnimation(.easeInOut(duration: 2.6).repeatForever(autoreverses: true)) {
+                    ctaGlow = true
+                }
+            }
         }
     }
+
+    // Midnight Glow CTA palette.
+    private static let ctaInk = Color(red: 0.063, green: 0.086, blue: 0.122)   // #10161f
+    private static let ctaEmerald = Color(red: 0.063, green: 0.725, blue: 0.506) // #10b981
+    private static let ctaMint = Color(red: 0.498, green: 0.914, blue: 0.784)  // #7fe9c8
+    private static let ctaGold = Color(red: 0.961, green: 0.769, blue: 0.318)  // #f5c451
 
     /// Guided walkthrough of the player's mistakes: step through each one
     /// (board shows played-in-red vs best-in-green), finish with the coach.
