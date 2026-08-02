@@ -15,8 +15,13 @@ struct Puzzle: Codable, Identifiable, Hashable {
 enum PuzzleCategory: String, CaseIterable, Identifiable {
     case mateIn1 = "mate_in_1"
     case mateIn2 = "mate_in_2"
+    case mateIn3 = "mate_in_3"
     case fork
     case pin
+    case skewer
+    case discoveredAttack = "discovered_attack"
+    case doubleCheck = "double_check"
+    case deflection
     case hangingPiece = "hanging_piece"
     case endgame
 
@@ -26,8 +31,13 @@ enum PuzzleCategory: String, CaseIterable, Identifiable {
         switch self {
         case .mateIn1: "Mate in 1"
         case .mateIn2: "Mate in 2"
+        case .mateIn3: "Mate in 3"
         case .fork: "Forks"
         case .pin: "Pins"
+        case .skewer: "Skewers"
+        case .discoveredAttack: "Discovered Attacks"
+        case .doubleCheck: "Double Checks"
+        case .deflection: "Deflection"
         case .hangingPiece: "Hanging Pieces"
         case .endgame: "Endgames"
         }
@@ -37,8 +47,13 @@ enum PuzzleCategory: String, CaseIterable, Identifiable {
         switch self {
         case .mateIn1: "crown.fill"
         case .mateIn2: "crown"
+        case .mateIn3: "3.circle.fill"
         case .fork: "arrow.triangle.branch"
         case .pin: "pin.fill"
+        case .skewer: "arrow.left.and.right"
+        case .discoveredAttack: "eye.slash.fill"
+        case .doubleCheck: "exclamationmark.2"
+        case .deflection: "arrow.uturn.right"
         case .hangingPiece: "exclamationmark.triangle.fill"
         case .endgame: "flag.checkered"
         }
