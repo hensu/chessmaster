@@ -37,6 +37,14 @@ settings:
     # archive; it must exceed the highest build ever uploaded.
     MARKETING_VERSION: "1.0"
     CURRENT_PROJECT_VERSION: "46"
+    # APNs environment drives the aps-environment entitlement (below) and must
+    # match the build's token type: Debug/local = sandbox, Release
+    # (TestFlight/App Store) = production. The client reports the same split
+    # via #if DEBUG so the backend sends to the right Apple host.
+    APS_ENVIRONMENT: development
+  configs:
+    Release:
+      APS_ENVIRONMENT: production
 
 schemes:
   Chessmaster:
@@ -97,9 +105,9 @@ targets:
       path: Chessmaster/Chessmaster.entitlements
       properties:
         com.apple.developer.applesignin: [Default]
-        # Push (re-engagement). "development" = sandbox APNs for dev/TestFlight
-        # testing; the App Store build needs "production".
-        aps-environment: development
+        # Push (re-engagement). Substituted per-config at build time from
+        # APS_ENVIRONMENT: sandbox for Debug, production for Release.
+        aps-environment: $(APS_ENVIRONMENT)
     info:
       path: Chessmaster/Info.plist
       properties:
