@@ -165,6 +165,14 @@ final class GameViewModel {
                 container?.sync.track("game_finished", props)
                 if let games = try? container?.games.recentGames() {
                     StreakNotifier.refresh(games: games)
+                    // Chess.com-style: ask for loud notifications at a high-intent
+                    // moment — after a win, or by the 3rd game so players who keep
+                    // losing are still asked once.
+                    if case .engine = session.config.opponent,
+                       !ProcessInfo.processInfo.arguments.contains("--uitest"),
+                       normalizedResult(result) == "win" || games.count >= 3 {
+                        Task { await NotificationPermission.requestFullIfNeeded() }
+                    }
                 }
                 if let container { ReengagementNotifier.refresh(container: container) }
                 // Decisive games go straight to the analysis review; the

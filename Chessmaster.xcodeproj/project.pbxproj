@@ -53,6 +53,7 @@
 		AC33AE4F7AE770A3F60A748B /* ChessDomain in Frameworks */ = {isa = PBXBuildFile; productRef = AFD1EBBBC592159FAB27D129 /* ChessDomain */; };
 		AD2D350EA4EE1A05250A35E6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1DD2AF5BE0533DC371423886 /* Assets.xcassets */; };
 		AEEFBCBEDB338FE3CCA7749D /* PersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7CA4FAB5A8888A81F2A83A6 /* PersistenceTests.swift */; };
+		B153F208ACCECF958F3222F2 /* NotificationPermission.swift in Sources */ = {isa = PBXBuildFile; fileRef = 017E40DBA022341C19965FCE /* NotificationPermission.swift */; };
 		B1AFA194E3FE9DAF35E10C0A /* DependencyContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9C90C6BEC5D4C976B91B3B43 /* DependencyContainer.swift */; };
 		B60CD0B236A1ED4BEEE980E1 /* SupabaseSync in Frameworks */ = {isa = PBXBuildFile; productRef = E91F270EFF39E5B42733B150 /* SupabaseSync */; };
 		B6C45E601ECEBB356336BDDB /* PlayerReviewModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98C8FA9D7BDE02060B9FE6CB /* PlayerReviewModels.swift */; };
@@ -87,6 +88,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		017E40DBA022341C19965FCE /* NotificationPermission.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationPermission.swift; sourceTree = "<group>"; };
 		01D4C1A10BC55419D63A6B5F /* LiveBackendTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveBackendTests.swift; sourceTree = "<group>"; };
 		06D4C48B867F24E431B1BCB6 /* PuzzleScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PuzzleScreen.swift; sourceTree = "<group>"; };
 		07E081E4FE6684A66AF57062 /* GoogleSignInHelper.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GoogleSignInHelper.swift; sourceTree = "<group>"; };
@@ -280,6 +282,7 @@
 			isa = PBXGroup;
 			children = (
 				99160096A3BF1920CDB38A02 /* NotificationCoordinator.swift */,
+				017E40DBA022341C19965FCE /* NotificationPermission.swift */,
 				909AD89092D6C75E48CFADBC /* PushRegistration.swift */,
 				0C4B17CD8C7533EF083CE7C6 /* ReengagementNotifier.swift */,
 			);
@@ -558,6 +561,7 @@
 				3DAE95ECEAB971DB62941656 /* LearnScreen.swift in Sources */,
 				4A66156D57D8DD6CBA4B3627 /* LessonScreen.swift in Sources */,
 				C84489BB057E4D497C096492 /* NotificationCoordinator.swift in Sources */,
+				B153F208ACCECF958F3222F2 /* NotificationPermission.swift in Sources */,
 				B6C45E601ECEBB356336BDDB /* PlayerReviewModels.swift in Sources */,
 				DE36ACB41237FB84CDF0E3D4 /* ProfileScreen.swift in Sources */,
 				E5B215B3C064E59D4208205F /* PushRegistration.swift in Sources */,
@@ -641,7 +645,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 47;
+				CURRENT_PROJECT_VERSION = 48;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = BD3U76LB98;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -747,7 +751,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 47;
+				CURRENT_PROJECT_VERSION = 48;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = BD3U76LB98;
 				ENABLE_NS_ASSERTIONS = NO;

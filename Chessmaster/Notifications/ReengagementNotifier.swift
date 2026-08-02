@@ -75,13 +75,10 @@ enum ReengagementNotifier {
             cancelAll(); return
         }
 
+        // Permission is requested loudly after a win (NotificationPermission);
+        // only schedule once the user has granted it.
         let center = UNUserNotificationCenter.current()
-        var status = await center.notificationSettings().authorizationStatus
-        if status == .notDetermined {
-            // .provisional grants quietly, with no permission prompt.
-            _ = try? await center.requestAuthorization(options: [.alert, .sound, .badge, .provisional])
-            status = await center.notificationSettings().authorizationStatus
-        }
+        let status = await center.notificationSettings().authorizationStatus
         guard status == .authorized || status == .provisional else { return }
 
         cancelAll()

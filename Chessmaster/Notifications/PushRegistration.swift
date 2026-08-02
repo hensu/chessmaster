@@ -1,6 +1,5 @@
 // Chessmaster — GPL-3.0-or-later
 import UIKit
-import UserNotifications
 import SupabaseSync
 
 /// Receives the APNs device token (SwiftUI has no other hook for it) and hands
@@ -43,15 +42,8 @@ enum Push {
     /// display is governed by the (provisional) notification authorization.
     @MainActor static func registerIfSignedIn(_ sync: SyncService) {
         guard sync.isSignedIn else { return }
-        // Ensure at least provisional (quiet) authorization so server pushes
-        // are actually displayed — for push users the re-engagement notifier
-        // hands off to the server and never requests it itself.
-        Task {
-            let center = UNUserNotificationCenter.current()
-            if await center.notificationSettings().authorizationStatus == .notDetermined {
-                _ = try? await center.requestAuthorization(options: [.alert, .sound, .badge, .provisional])
-            }
-        }
+        // The token issues regardless of alert permission; display is governed
+        // by the loud permission we request after a win (NotificationPermission).
         UIApplication.shared.registerForRemoteNotifications()
     }
 }
