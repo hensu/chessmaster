@@ -1,131 +1,313 @@
 {
- "lessons": [
-  {
-   "id": "rook",
-   "title": "The Rook",
-   "subtitle": "Straight lines, any distance",
-   "steps": [
-    {"fen": "7k/8/8/8/8/8/8/R3K3 w - - 0 1",
-     "prompt": "Rooks slide along ranks and files. Move the rook up to a4.",
-     "expected": ["a1a4"],
-     "success": "Straight up the file — that's the rook's power."},
-    {"fen": "7k/8/8/8/R7/8/8/4K3 w - - 0 1",
-     "prompt": "Rooks slide sideways too. Take the rook across to h4.",
-     "expected": ["a4h4"],
-     "success": "The rook controls whole ranks and files at once."},
-    {"fen": "7k/p7/8/8/R7/8/8/4K3 w - - 0 1",
-     "prompt": "Rooks capture the same way they move. Take the pawn on a7.",
-     "expected": ["a4a7"],
-     "success": "Captured! A rook is worth about five pawns."}
-   ]
-  },
-  {
-   "id": "bishop",
-   "title": "The Bishop",
-   "subtitle": "Diagonals only",
-   "steps": [
-    {"fen": "7k/8/8/8/8/8/8/2B1K3 w - - 0 1",
-     "prompt": "Bishops slide along diagonals. Move the bishop to g5.",
-     "expected": ["c1g5"],
-     "success": "Nice — c1, d2, e3, f4, g5: one clean diagonal."},
-    {"fen": "7k/8/8/6p1/8/8/8/2B1K3 w - - 0 1",
-     "prompt": "Capture the pawn on g5.",
-     "expected": ["c1g5"],
-     "success": "A bishop stays on its color for the whole game."}
-   ]
-  },
-  {
-   "id": "knight",
-   "title": "The Knight",
-   "subtitle": "The L-shape jump",
-   "steps": [
-    {"fen": "7k/8/8/8/8/8/8/1N2K3 w - - 0 1",
-     "prompt": "Knights move in an L: two squares one way, one square across. Jump to c3.",
-     "expected": ["b1c3"],
-     "success": "That L-shape is the knight's signature."},
-    {"fen": "7k/8/8/8/8/2P5/1PP5/1N2K3 w - - 0 1",
-     "prompt": "Knights are the only piece that can jump over others. Hop over your pawns to d2.",
-     "expected": ["b1d2"],
-     "success": "Nothing blocks a knight — it jumps clean over."}
-   ]
-  },
-  {
-   "id": "queen",
-   "title": "The Queen",
-   "subtitle": "Rook + bishop in one",
-   "steps": [
-    {"fen": "7k/8/8/8/8/8/8/3QK3 w - - 0 1",
-     "prompt": "The queen moves like a rook AND a bishop. Slide her up to d7.",
-     "expected": ["d1d7"],
-     "success": "Straight lines, like a rook."},
-    {"fen": "7k/8/8/8/8/8/8/3QK3 w - - 0 1",
-     "prompt": "Now the bishop side: take the diagonal to h5.",
-     "expected": ["d1h5"],
-     "success": "Your most powerful piece — worth about nine pawns."}
-   ]
-  },
-  {
-   "id": "pawn",
-   "title": "Pawns",
-   "subtitle": "Forward march, diagonal capture",
-   "steps": [
-    {"fen": "7k/8/8/8/8/8/4P3/4K3 w - - 0 1",
-     "prompt": "Pawns move straight ahead — and may go two squares on their first move. Push the pawn to e4.",
-     "expected": ["e2e4"],
-     "success": "After the first move, pawns advance one square at a time."},
-    {"fen": "7k/8/8/8/3p4/4P3/8/4K3 w - - 0 1",
-     "prompt": "Pawns capture diagonally, not straight. Take the pawn on d4.",
-     "expected": ["e3d4"],
-     "success": "Diagonal captures — the pawn's only sideways step."}
-   ]
-  },
-  {
-   "id": "check",
-   "title": "Check",
-   "subtitle": "Attacking the king",
-   "steps": [
-    {"fen": "4k3/8/8/8/8/8/8/R5K1 w - - 0 1",
-     "prompt": "Check means the king is under attack. Move your rook to attack the black king.",
-     "expected": ["a1a8", "a1e1"],
-     "success": "Check! The king must deal with the threat immediately."}
-   ]
-  },
-  {
-   "id": "escape-check",
-   "title": "Escaping Check",
-   "subtitle": "When your king is attacked",
-   "steps": [
-    {"fen": "4r2k/8/8/8/8/8/8/4K3 w - - 0 1",
-     "prompt": "Your king is in check from the rook! Step out of its line of attack.",
-     "expected": ["e1d1", "e1f1", "e1d2", "e1f2"],
-     "success": "Safe! You can escape check by moving, blocking, or capturing the attacker."}
-   ]
-  },
-  {
-   "id": "back-rank-mate",
-   "title": "Checkmate",
-   "subtitle": "The back-rank mate",
-   "steps": [
-    {"fen": "6k1/5ppp/8/8/8/8/8/R5K1 w - - 0 1",
-     "prompt": "Checkmate ends the game: check with no escape. The black king is trapped behind its own pawns — deliver mate with the rook.",
-     "expected": ["a1a8"],
-     "success": "Checkmate! The king can't escape its own pawn wall. This is the classic back-rank mate."}
-   ]
-  },
-  {
-   "id": "opening",
-   "title": "Opening Play",
-   "subtitle": "Fight for the center",
-   "steps": [
-    {"fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
-     "prompt": "Good openings fight for the center. Push a center pawn two squares.",
-     "expected": ["e2e4", "d2d4"],
-     "success": "The center controls the game — your pieces reach more squares from there."},
-    {"fen": "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
-     "prompt": "Now develop a piece toward the center — bring out a knight to f3.",
-     "expected": ["g1f3"],
-     "success": "Develop knights and bishops early, castle soon, and don't move the same piece twice without reason."}
-   ]
-  }
- ]
+  "lessons": [
+    {
+      "id": "rook",
+      "title": "The Rook",
+      "subtitle": "Straight lines, any distance",
+      "steps": [
+        {
+          "fen": "7k/8/8/8/8/8/8/R3K3 w - - 0 1",
+          "prompt": "Rooks slide along ranks and files. Move the rook up to a4.",
+          "expected": [
+            "a1a4"
+          ],
+          "success": "Straight up the file — that's the rook's power."
+        },
+        {
+          "fen": "7k/8/8/8/R7/8/8/4K3 w - - 0 1",
+          "prompt": "Rooks slide sideways too. Take the rook across to h4.",
+          "expected": [
+            "a4h4"
+          ],
+          "success": "The rook controls whole ranks and files at once."
+        },
+        {
+          "fen": "7k/p7/8/8/R7/8/8/4K3 w - - 0 1",
+          "prompt": "Rooks capture the same way they move. Take the pawn on a7.",
+          "expected": [
+            "a4a7"
+          ],
+          "success": "Captured! A rook is worth about five pawns."
+        }
+      ]
+    },
+    {
+      "id": "bishop",
+      "title": "The Bishop",
+      "subtitle": "Diagonals only",
+      "steps": [
+        {
+          "fen": "7k/8/8/8/8/8/8/2B1K3 w - - 0 1",
+          "prompt": "Bishops slide along diagonals. Move the bishop to g5.",
+          "expected": [
+            "c1g5"
+          ],
+          "success": "Nice — c1, d2, e3, f4, g5: one clean diagonal."
+        },
+        {
+          "fen": "7k/8/8/6p1/8/8/8/2B1K3 w - - 0 1",
+          "prompt": "Capture the pawn on g5.",
+          "expected": [
+            "c1g5"
+          ],
+          "success": "A bishop stays on its color for the whole game."
+        }
+      ]
+    },
+    {
+      "id": "knight",
+      "title": "The Knight",
+      "subtitle": "The L-shape jump",
+      "steps": [
+        {
+          "fen": "7k/8/8/8/8/8/8/1N2K3 w - - 0 1",
+          "prompt": "Knights move in an L: two squares one way, one square across. Jump to c3.",
+          "expected": [
+            "b1c3"
+          ],
+          "success": "That L-shape is the knight's signature."
+        },
+        {
+          "fen": "7k/8/8/8/8/2P5/1PP5/1N2K3 w - - 0 1",
+          "prompt": "Knights are the only piece that can jump over others. Hop over your pawns to d2.",
+          "expected": [
+            "b1d2"
+          ],
+          "success": "Nothing blocks a knight — it jumps clean over."
+        }
+      ]
+    },
+    {
+      "id": "queen",
+      "title": "The Queen",
+      "subtitle": "Rook + bishop in one",
+      "steps": [
+        {
+          "fen": "7k/8/8/8/8/8/8/3QK3 w - - 0 1",
+          "prompt": "The queen moves like a rook AND a bishop. Slide her up to d7.",
+          "expected": [
+            "d1d7"
+          ],
+          "success": "Straight lines, like a rook."
+        },
+        {
+          "fen": "7k/8/8/8/8/8/8/3QK3 w - - 0 1",
+          "prompt": "Now the bishop side: take the diagonal to h5.",
+          "expected": [
+            "d1h5"
+          ],
+          "success": "Your most powerful piece — worth about nine pawns."
+        }
+      ]
+    },
+    {
+      "id": "pawn",
+      "title": "Pawns",
+      "subtitle": "Forward march, diagonal capture",
+      "steps": [
+        {
+          "fen": "7k/8/8/8/8/8/4P3/4K3 w - - 0 1",
+          "prompt": "Pawns move straight ahead — and may go two squares on their first move. Push the pawn to e4.",
+          "expected": [
+            "e2e4"
+          ],
+          "success": "After the first move, pawns advance one square at a time."
+        },
+        {
+          "fen": "7k/8/8/8/3p4/4P3/8/4K3 w - - 0 1",
+          "prompt": "Pawns capture diagonally, not straight. Take the pawn on d4.",
+          "expected": [
+            "e3d4"
+          ],
+          "success": "Diagonal captures — the pawn's only sideways step."
+        }
+      ]
+    },
+    {
+      "id": "check",
+      "title": "Check",
+      "subtitle": "Attacking the king",
+      "steps": [
+        {
+          "fen": "4k3/8/8/8/8/8/8/R5K1 w - - 0 1",
+          "prompt": "Check means the king is under attack. Move your rook to attack the black king.",
+          "expected": [
+            "a1a8",
+            "a1e1"
+          ],
+          "success": "Check! The king must deal with the threat immediately."
+        }
+      ]
+    },
+    {
+      "id": "escape-check",
+      "title": "Escaping Check",
+      "subtitle": "When your king is attacked",
+      "steps": [
+        {
+          "fen": "4r2k/8/8/8/8/8/8/4K3 w - - 0 1",
+          "prompt": "Your king is in check from the rook! Step out of its line of attack.",
+          "expected": [
+            "e1d1",
+            "e1f1",
+            "e1d2",
+            "e1f2"
+          ],
+          "success": "Safe! You can escape check by moving, blocking, or capturing the attacker."
+        }
+      ]
+    },
+    {
+      "id": "back-rank-mate",
+      "title": "Checkmate",
+      "subtitle": "The back-rank mate",
+      "steps": [
+        {
+          "fen": "6k1/5ppp/8/8/8/8/8/R5K1 w - - 0 1",
+          "prompt": "Checkmate ends the game: check with no escape. The black king is trapped behind its own pawns — deliver mate with the rook.",
+          "expected": [
+            "a1a8"
+          ],
+          "success": "Checkmate! The king can't escape its own pawn wall. This is the classic back-rank mate."
+        }
+      ]
+    },
+    {
+      "id": "opening",
+      "title": "Opening Play",
+      "subtitle": "Fight for the center",
+      "steps": [
+        {
+          "fen": "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1",
+          "prompt": "Good openings fight for the center. Push a center pawn two squares.",
+          "expected": [
+            "e2e4",
+            "d2d4"
+          ],
+          "success": "The center controls the game — your pieces reach more squares from there."
+        },
+        {
+          "fen": "rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2",
+          "prompt": "Now develop a piece toward the center — bring out a knight to f3.",
+          "expected": [
+            "g1f3"
+          ],
+          "success": "Develop knights and bishops early, castle soon, and don't move the same piece twice without reason."
+        }
+      ]
+    },
+    {
+      "id": "fork-knight",
+      "title": "The Knight Fork",
+      "subtitle": "One knight, two targets",
+      "steps": [
+        {
+          "fen": "k3q3/8/8/1N6/8/8/8/6K1 w - - 0 1",
+          "prompt": "The knight can hit the king and queen at once. Play Nc7+.",
+          "expected": [
+            "b5c7"
+          ],
+          "success": "Check — and the queen is attacked too."
+        },
+        {
+          "fen": "4q3/k1N5/8/8/8/8/8/6K1 w - - 0 2",
+          "prompt": "The king stepped aside. Now grab the queen with Nxe8.",
+          "expected": [
+            "c7e8"
+          ],
+          "success": "Fork complete — up a queen."
+        }
+      ]
+    },
+    {
+      "id": "pin-absolute",
+      "title": "The Pin",
+      "subtitle": "Freeze a piece against its king",
+      "steps": [
+        {
+          "fen": "4k3/8/2n5/8/8/8/8/5BK1 w - - 0 1",
+          "prompt": "Line your bishop up on the knight and king. Play Bb5.",
+          "expected": [
+            "f1b5"
+          ],
+          "success": "Pinned — the knight can't move without exposing the king."
+        }
+      ]
+    },
+    {
+      "id": "skewer",
+      "title": "The Skewer",
+      "subtitle": "Check first, win what's behind",
+      "steps": [
+        {
+          "fen": "7q/8/8/7k/8/1K6/8/R7 w - - 0 1",
+          "prompt": "Check the king along the h-file with Rh1+.",
+          "expected": [
+            "a1h1"
+          ],
+          "success": "The king must move — and the queen behind it falls."
+        }
+      ]
+    },
+    {
+      "id": "mate-kq",
+      "title": "King & Queen Mate",
+      "subtitle": "The basic checkmate",
+      "steps": [
+        {
+          "fen": "7k/5K2/8/8/8/8/8/6Q1 w - - 0 1",
+          "prompt": "Your king guards g7. Deliver mate with Qg7#.",
+          "expected": [
+            "g1g7"
+          ],
+          "success": "Checkmate — king and queen box the enemy in."
+        }
+      ]
+    },
+    {
+      "id": "smothered-mate",
+      "title": "Smothered Mate",
+      "subtitle": "The knight's trap",
+      "steps": [
+        {
+          "fen": "6rk/6pp/8/6N1/8/8/8/6K1 w - - 0 1",
+          "prompt": "The king is boxed in by its own pieces. Play Nf7#.",
+          "expected": [
+            "g5f7"
+          ],
+          "success": "Smothered mate — the king has nowhere to go."
+        }
+      ]
+    },
+    {
+      "id": "promotion",
+      "title": "Pawn Promotion",
+      "subtitle": "Escort a pawn home",
+      "steps": [
+        {
+          "fen": "8/2k1P3/4K3/8/8/8/8/8 w - - 0 1",
+          "prompt": "One step to go. Promote the pawn with e8=Q.",
+          "expected": [
+            "e7e8q"
+          ],
+          "success": "A new queen — a pawn that reaches the end transforms."
+        }
+      ]
+    },
+    {
+      "id": "castling",
+      "title": "Castling",
+      "subtitle": "King safety in one move",
+      "steps": [
+        {
+          "fen": "r3k2r/8/8/8/8/8/8/R3K2R w KQkq - 0 1",
+          "prompt": "Tuck your king away and activate the rook. Castle kingside (O-O).",
+          "expected": [
+            "e1g1"
+          ],
+          "success": "Castled — king safe, rook in the game."
+        }
+      ]
+    }
+  ]
 }
