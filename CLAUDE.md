@@ -70,9 +70,9 @@ service this client talks to.
 ## Learn tab (puzzles + lessons)
 
 - `Chessmaster/Learn/` — LearnScreen (tab root), PuzzleScreen/PuzzleViewModel, LessonScreen/LessonViewModel, LearnModels (content loaders + LearnProgress in UserDefaults).
-- Content bundles: `Chessmaster/Resources/Learn/puzzles.json` (240 curated lichess CC0 puzzles, 6 categories × 40, mirrors the coaching theme taxonomy; moves[0] is the opponent's setup move) and `lessons.json` (hand-written guided lessons; `expected` is a list of accepted UCI moves per step).
+- Content bundles: `Chessmaster/Resources/Learn/puzzles.json` (**740** curated lichess CC0 puzzles: 6 categories × ~126, spread ~18 per rating band across a **difficulty ladder 600→2879** so it's not all-easy; `{"puzzles":[…]}`, moves[0] is the opponent's setup move) and `lessons.json` (hand-written guided lessons; `expected` is a list of accepted UCI moves per step).
 - Puzzle/lesson boards reuse GameSession (humanLocal) + BoardView; wrong moves rebuild the session at the solved prefix. Alternative checkmates count as solved.
-- To refresh/extend puzzles: stream `database.lichess.org/lichess_db_puzzle.csv.zst` (CC0), filter by theme/rating/popularity — see git history for the curation script shape.
+- To refresh/extend puzzles: stream `database.lichess.org/lichess_db_puzzle.csv.zst` (CC0, ~302MB) → `zstd -dc | python3 curate.py`, filtering by theme (→ our category), popularity≥85, plays≥100, RD≤100, and bucketing ~18 per rating band per category for a difficulty ladder. The 740-puzzle set was built this way (2026-08-01).
 
 ## Conventions
 
