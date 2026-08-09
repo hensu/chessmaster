@@ -21,7 +21,11 @@
           "familyShareable": false,
           "groupNumber": 1,
           "internalID": "6740000003",
-          "introductoryOffer": null,
+          "introductoryOffer": {
+            "internalID": "6740000101",
+            "paymentMode": "free",
+            "subscriptionPeriod": "P1W"
+          },
           "localizations": [
             {
               "description": "Advanced AI analysis on every game",
@@ -38,11 +42,15 @@
         {
           "adHocOffers": [],
           "codeOffers": [],
-          "displayPrice": "99.99",
+          "displayPrice": "79.99",
           "familyShareable": false,
           "groupNumber": 1,
           "internalID": "6740000004",
-          "introductoryOffer": null,
+          "introductoryOffer": {
+            "internalID": "6740000102",
+            "paymentMode": "free",
+            "subscriptionPeriod": "P1W"
+          },
           "localizations": [
             {
               "description": "Advanced AI analysis on every game",
@@ -63,7 +71,11 @@
           "familyShareable": false,
           "groupNumber": 2,
           "internalID": "6740000001",
-          "introductoryOffer": null,
+          "introductoryOffer": {
+            "internalID": "6740000103",
+            "paymentMode": "free",
+            "subscriptionPeriod": "P1W"
+          },
           "localizations": [
             {
               "description": "Unlimited AI game reviews + retry training",
@@ -80,11 +92,15 @@
         {
           "adHocOffers": [],
           "codeOffers": [],
-          "displayPrice": "59.99",
+          "displayPrice": "49.99",
           "familyShareable": false,
           "groupNumber": 2,
           "internalID": "6740000002",
-          "introductoryOffer": null,
+          "introductoryOffer": {
+            "internalID": "6740000104",
+            "paymentMode": "free",
+            "subscriptionPeriod": "P1W"
+          },
           "localizations": [
             {
               "description": "Unlimited AI game reviews + retry training",
