@@ -18,7 +18,7 @@ struct WelcomeScreen: View {
 
     private enum Step: Int, CaseIterable {
         case goal, experience, rating, opening, midgame, endgame, hero, rivals
-        case computing, score, promise, signup, missingOut
+        case computing, score, promise, signup, paywall
     }
     @State private var step: Step = .goal
 
@@ -96,16 +96,19 @@ struct WelcomeScreen: View {
             case .promise:
                 promisePage
             case .signup:
-                SignupPage(
-                    onSkip: {
-                        container.sync.track("signup_skipped")
-                        step = .missingOut
-                    },
-                    onDone: onDone
-                )
+                SignupPage(onSignedIn: {
+                    // Sign-up is required; after it, show the soft paywall
+                    // (unless they already have a subscription).
+                    if container.entitlements.isPremium {
+                        onDone()
+                    } else {
+                        withAnimation { step = .paywall }
+                    }
+                })
                 .onAppear { container.sync.track("signup_viewed") }
-            case .missingOut:
-                missingOutPage
+            case .paywall:
+                OnboardingPaywall(onFinish: onDone)
+                    .onAppear { container.sync.track("paywall_viewed", ["source": "onboarding"]) }
             }
         }
         .preferredColorScheme(.light)   // Cal AI tone: quiz is always light
@@ -342,52 +345,7 @@ struct WelcomeScreen: View {
         }
     }
 
-    // MARK: - Missing out
 
-    private var missingOutPage: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text("Playing without an account")
-                .font(.system(size: 34, weight: .bold))
-                .padding(.horizontal, 28)
-                .padding(.top, 60)
-            VStack(alignment: .leading, spacing: 16) {
-                missRow("iphone.slash", "Your games and score are gone if you lose or change your phone")
-                missRow("brain.head.profile", "Coaching reports and training progress aren't kept together")
-                missRow("chart.line.downtrend.xyaxis", "No progress tracking across devices")
-            }
-            .padding(20)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color(.secondarySystemBackground), in: RoundedRectangle(cornerRadius: 18))
-            .padding(.horizontal, 28)
-            .padding(.top, 28)
-            Spacer()
-            VStack(spacing: 10) {
-                CapsuleCTA(label: "Create a free account", enabled: true) {
-                    container.sync.track("missing_out_create_account")
-                    withAnimation { step = .signup }
-                }
-                Button("Play anyway") {
-                    container.sync.track("missing_out_play_anyway")
-                    onDone()
-                }
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity)
-                .padding(.bottom, 24)
-            }
-        }
-        .onAppear { container.sync.track("missing_out_viewed") }
-    }
-
-    private func missRow(_ icon: String, _ text: String) -> some View {
-        HStack(spacing: 12) {
-            Image(systemName: icon)
-                .frame(width: 26)
-                .foregroundStyle(.red)
-            Text(text)
-                .font(.subheadline)
-        }
-    }
 }
 
 // MARK: - Cal AI-style building blocks
@@ -510,8 +468,8 @@ struct CapsuleCTA: View {
 /// outlined Google/email pills.
 private struct SignupPage: View {
     @Environment(DependencyContainer.self) private var container
-    let onSkip: () -> Void
-    let onDone: () -> Void
+    /// Sign-up is required to continue — called once a session exists.
+    let onSignedIn: () -> Void
 
     @State private var showEmailSheet = false
     @State private var busy = false
@@ -531,7 +489,7 @@ private struct SignupPage: View {
             Spacer()
 
             VStack(spacing: 12) {
-                AppleSignInButton(sync: container.sync) { onDone() }
+                AppleSignInButton(sync: container.sync) { onSignedIn() }
                     .frame(height: 54)
                     .clipShape(Capsule())
 
@@ -541,7 +499,7 @@ private struct SignupPage: View {
                     Task { @MainActor in
                         await GoogleSignInHelper.signIn(sync: container.sync)
                         busy = false
-                        if container.sync.isSignedIn { onDone() }
+                        if container.sync.isSignedIn { onSignedIn() }
                     }
                 }
 
@@ -549,12 +507,6 @@ private struct SignupPage: View {
                     container.sync.track("signup_method_tapped", ["method": "email"])
                     showEmailSheet = true
                 }
-
-                Button("Skip for now") { onSkip() }
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
-                    .frame(maxWidth: .infinity)
-                    .padding(.top, 8)
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 34)
@@ -566,7 +518,7 @@ private struct SignupPage: View {
         .sheet(isPresented: $showEmailSheet) {
             AccountSheet(sync: container.sync)
                 .onDisappear {
-                    if container.sync.isSignedIn { onDone() }
+                    if container.sync.isSignedIn { onSignedIn() }
                 }
         }
     }

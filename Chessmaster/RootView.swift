@@ -6,25 +6,27 @@ struct RootView: View {
     @State private var router = AppRouter()
     @Environment(DependencyContainer.self) private var container
     @AppStorage("appearance") private var appearance = "dark"
-    /// Dismisses the welcome flow for this session once completed or skipped.
-    @State private var skippedSignIn = false
-    /// Decided once at launch so mid-flow writes to `onboarding.quizDone`
-    /// can't dismiss the cover early. The welcome flow only ever greets a
-    /// user who hasn't finished the quiz; sign-in afterwards lives in
-    /// Profile → Account.
+    /// Whether the onboarding cover is up. Decided once, when the session
+    /// restore settles, so it survives sign-in mid-flow (signup → paywall)
+    /// and only closes when onboarding actually finishes.
+    @State private var welcomePresented = false
+    @State private var welcomeDecided = false
+    /// Snapshot at launch — the welcome only greets a user who hasn't finished
+    /// the quiz; sign-in afterwards lives in Profile → Account.
     @State private var onboarded = UserDefaults.standard.bool(forKey: "onboarding.quizDone")
     /// Handles taps on local notifications (attribution + routing).
     @State private var notifications: NotificationCoordinator?
 
-    private var showWelcome: Bool {
-        let arguments = ProcessInfo.processInfo.arguments
-        if arguments.contains("--reset-welcome") { return !skippedSignIn }
-        if arguments.contains("--uitest") { return false }
-        if arguments.contains(where: { $0.hasPrefix("--autostart") }) { return false }
-        // Wait until the session restore has settled — before that,
-        // isSignedIn is unknown, and prompting a signed-in user is the bug.
-        return container.sync.sessionRestored
-            && !onboarded && !skippedSignIn && !container.sync.isSignedIn && container.sync.isConfigured
+    /// Decide once (when the session restore settles) whether to show the
+    /// onboarding cover. After that the cover's lifetime is owned by
+    /// `welcomePresented`, so signing in mid-flow doesn't dismiss it.
+    private func decideWelcome() {
+        guard !welcomeDecided, container.sync.sessionRestored else { return }
+        welcomeDecided = true
+        let args = ProcessInfo.processInfo.arguments
+        if args.contains("--uitest") || args.contains(where: { $0.hasPrefix("--autostart") }) { return }
+        if args.contains("--reset-welcome") { welcomePresented = true; return }
+        welcomePresented = !onboarded && !container.sync.isSignedIn && container.sync.isConfigured
     }
 
     private var colorScheme: ColorScheme? {
@@ -117,7 +119,9 @@ struct RootView: View {
                let jws = container.entitlements.latestTransactionJWS {
                 await container.sync.verifySubscription(jws: jws)
             }
+            decideWelcome()
         }
+        .onChange(of: container.sync.sessionRestored) { _, _ in decideWelcome() }
         // A purchase made before signing in (or under a previous account)
         // must attach to the account the moment it exists — launch-time
         // reconciliation alone misses sign-ins that happen mid-session.
@@ -135,11 +139,9 @@ struct RootView: View {
                 }
             }
         }
-        .fullScreenCover(isPresented: .constant(showWelcome)) {
-            WelcomeScreen {
-                skippedSignIn = true
-            }
-            .environment(container)
+        .fullScreenCover(isPresented: $welcomePresented) {
+            WelcomeScreen { welcomePresented = false }
+                .environment(container)
         }
         .preferredColorScheme(colorScheme)
     }

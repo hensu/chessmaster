@@ -24,7 +24,8 @@
           "introductoryOffer": {
             "internalID": "6740000101",
             "paymentMode": "free",
-            "subscriptionPeriod": "P1W"
+            "subscriptionPeriod": "P1W",
+            "numberOfPeriods": 1
           },
           "localizations": [
             {
@@ -49,7 +50,8 @@
           "introductoryOffer": {
             "internalID": "6740000102",
             "paymentMode": "free",
-            "subscriptionPeriod": "P1W"
+            "subscriptionPeriod": "P1W",
+            "numberOfPeriods": 1
           },
           "localizations": [
             {
@@ -74,7 +76,8 @@
           "introductoryOffer": {
             "internalID": "6740000103",
             "paymentMode": "free",
-            "subscriptionPeriod": "P1W"
+            "subscriptionPeriod": "P1W",
+            "numberOfPeriods": 1
           },
           "localizations": [
             {
@@ -99,7 +102,8 @@
           "introductoryOffer": {
             "internalID": "6740000104",
             "paymentMode": "free",
-            "subscriptionPeriod": "P1W"
+            "subscriptionPeriod": "P1W",
+            "numberOfPeriods": 1
           },
           "localizations": [
             {
@@ -118,7 +122,7 @@
     }
   ],
   "version": {
-    "major": 3,
+    "major": 4,
     "minor": 0
   }
 }
