@@ -20,7 +20,7 @@ xcodegen generate           # project.yml is the source of truth for the .xcodep
 ## Versioning & TestFlight
 
 - `project.yml` → `MARKETING_VERSION` / `CURRENT_PROJECT_VERSION` are the ONLY place to bump versions; Info.plist references them via `$(...)`. Never hardcode versions in Info.plist — xcodegen regenerates it.
-- TestFlight train is 1.0; highest uploaded build is **51** (repo is at 51). Bump `CURRENT_PROJECT_VERSION` above the last upload before every archive, then `xcodegen generate`. ASC rejects a duplicate build number, so verify the last uploaded number before bumping.
+- App Store **1.0 is released** (its build train is now CLOSED — uploads to 1.0 fail with "Invalid Pre-Release Train"). Current version is **MARKETING_VERSION 1.0.1**, highest uploaded build **51**. For a new App Store version you must bump `MARKETING_VERSION` above the last approved version (not just the build number); bump `CURRENT_PROJECT_VERSION` too, then `xcodegen generate`. ASC also rejects duplicate build numbers.
 - Uploads are manual (Xcode Organizer). CI does not deploy.
 
 ## Architecture map
