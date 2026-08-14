@@ -53,6 +53,7 @@ service this client talks to.
 - Deploy: `supabase functions deploy <name>` (needs `supabase login` in a real terminal — the token persists globally).
 - `generate-coaching-report`: per-game report. Tiered gemini-3.1-pro-preview (first 15/mo) → gemini-3.5-flash; routes claude-*/gpt-* by prefix. Prompt/schema in `functions/_shared/coaching.ts`.
 - `generate-player-review`: cross-game overview, `PLAYER_REVIEW_MODEL` env, default gemini-3.5-flash (won the 2026-07 bake-off round 2 on grounding-per-dollar; Opus 4.8 was previous default).
+- Receipt verification (rebuilt 2026-08-13): `verify-subscription` and the App Store webhook do NOT verify Apple JWS crypto — the Apple library's chain verifier can't run on Supabase's Deno (X509Certificate stubs throw ERR_NOT_IMPLEMENTED; it silently broke ALL purchase registration since launch). Instead, JWS is an untrusted hint; the authoritative transaction is fetched from Apple's App Store Server API over TLS (`_shared/appstore-api.ts`; APPSTORE_KEY_ID/ISSUER_ID/PRIVATE_KEY secrets = team ASC key 736XCSM36H). Never reintroduce SignedDataVerifier. config.toml pins verify_jwt=false for appstore-notifications/health-check.
 - Secrets set on the project: GEMINI_API_KEY, ANTHROPIC_API_KEY, OPENAI_API_KEY, model overrides. Gemini key also lives in GCP project chessmaster-502217 (`gcloud services api-keys ...`, key "chessmaster-coaching").
 - The SUPABASE_ANON_KEY in project.yml is the public client key — safe to commit.
 
