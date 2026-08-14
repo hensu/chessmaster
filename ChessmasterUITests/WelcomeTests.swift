@@ -2,13 +2,20 @@
 import XCTest
 
 final class WelcomeTests: XCTestCase {
-    /// First launch: full quiz → computed score → promise → signup;
-    /// skipping shows the missing-out screen, "Play anyway" lands in play.
+    /// First launch: Cal AI-style landing (Get Started + Sign In for existing
+    /// accounts) → full quiz → computed score → promise → signup page with
+    /// sign-up pills and its own Sign In link. Sign-up is mandatory, so the
+    /// walk ends at the signup page.
     @MainActor
-    func testOnboardingQuizLeadsToSignupAndSkip() throws {
+    func testLandingAndQuizLeadToSignup() throws {
         let app = XCUIApplication()
         app.launchArguments = ["--reset-welcome"]
         app.launch()
+
+        // Landing: demo frame, Get Started, and the existing-account path.
+        XCTAssertTrue(app.buttons["Get Started"].waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Sign In"].exists)
+        app.buttons["Get Started"].tap()
 
         func answer(_ question: String, with option: String) {
             XCTAssertTrue(app.staticTexts[question].waitForExistence(timeout: 5), question)
@@ -40,15 +47,11 @@ final class WelcomeTests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Our promise"].waitForExistence(timeout: 3))
         app.buttons["Let's go"].tap()
 
-        // Signup page.
+        // Signup page: sign-up wording plus the existing-account Sign In link.
         XCTAssertTrue(app.staticTexts["Save your progress"].waitForExistence(timeout: 3))
         XCTAssertTrue(app.buttons["Continue with Apple"].waitForExistence(timeout: 3))
-        XCTAssertTrue(app.buttons["Sign in with Google"].exists)
-        XCTAssertTrue(app.buttons["Continue with email"].exists)
-        app.buttons["Skip for now"].tap()
-
-        XCTAssertTrue(app.staticTexts["Playing without an account"].waitForExistence(timeout: 3))
-        app.buttons["Play anyway"].tap()
-        XCTAssertTrue(app.buttons.matching(NSPredicate(format: "label CONTAINS '3+2'")).firstMatch.waitForExistence(timeout: 5))
+        XCTAssertTrue(app.buttons["Sign up with Google"].exists)
+        XCTAssertTrue(app.buttons["Sign up with email"].exists)
+        XCTAssertTrue(app.buttons["Sign In"].exists)
     }
 }

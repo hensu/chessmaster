@@ -74,6 +74,7 @@
 		DF798717EA9FCB33169C4019 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = BEDBA0AC7C245938919B8B14 /* GoogleSignIn */; };
 		E552E5774E8FCA7C659C2C0F /* LearnModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3C725C84F48E94CACE977D /* LearnModels.swift */; };
 		E5B215B3C064E59D4208205F /* PushRegistration.swift in Sources */ = {isa = PBXBuildFile; fileRef = 909AD89092D6C75E48CFADBC /* PushRegistration.swift */; };
+		EA8EB2E9BFB442533A28E4F8 /* LandingScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 28A8E7645E6614A3EEBF363B /* LandingScreen.swift */; };
 		EB64CCFD387DAC5B01106BAE /* StockfishNets.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1727D1DE66BFC75B4B794D2 /* StockfishNets.swift */; };
 		FD885D1AA14F4B268A1BE0C7 /* PaywallKit in Frameworks */ = {isa = PBXBuildFile; productRef = CD6F22630D95EE1E9AC9C2A1 /* PaywallKit */; };
 /* End PBXBuildFile section */
@@ -104,6 +105,7 @@
 		1BF1679A3A674D050525CF9A /* ProfileScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileScreen.swift; sourceTree = "<group>"; };
 		1DD2AF5BE0533DC371423886 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		1F94E129CCDDADCCF43ACDFA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		28A8E7645E6614A3EEBF363B /* LandingScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LandingScreen.swift; sourceTree = "<group>"; };
 		29572AC62202C5EAC45ACF65 /* AnalysisScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisScreen.swift; sourceTree = "<group>"; };
 		2A3E14EA00423C432EA38ED5 /* WelcomeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeTests.swift; sourceTree = "<group>"; };
 		2DA50D27BA130D5806655A0C /* PlayFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayFlowTests.swift; sourceTree = "<group>"; };
@@ -314,6 +316,7 @@
 			children = (
 				C97E5D9350FECD9CCE642DE5 /* AppleSignInButton.swift */,
 				07E081E4FE6684A66AF57062 /* GoogleSignInHelper.swift */,
+				28A8E7645E6614A3EEBF363B /* LandingScreen.swift */,
 				590A590FE53E9390D1813D61 /* OnboardingPaywall.swift */,
 				9CA68C5D9F7B60986D8A9507 /* WelcomeScreen.swift */,
 			);
@@ -560,6 +563,7 @@
 				5CBED84720194D0CF7A0314E /* GoogleSignInHelper.swift in Sources */,
 				BD4B1A232FC03839B241CA33 /* HistoryScreen.swift in Sources */,
 				DDDB655CAC57E3F531D353B1 /* HomeScreen.swift in Sources */,
+				EA8EB2E9BFB442533A28E4F8 /* LandingScreen.swift in Sources */,
 				E552E5774E8FCA7C659C2C0F /* LearnModels.swift in Sources */,
 				3DAE95ECEAB971DB62941656 /* LearnScreen.swift in Sources */,
 				4A66156D57D8DD6CBA4B3627 /* LessonScreen.swift in Sources */,

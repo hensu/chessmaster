@@ -17,10 +17,11 @@ struct WelcomeScreen: View {
     @AppStorage("onboarding.goal") private var goal = ""
 
     private enum Step: Int, CaseIterable {
+        case landing
         case goal, experience, rating, opening, midgame, endgame, hero, rivals
         case computing, score, promise, signup, paywall
     }
-    @State private var step: Step = .goal
+    @State private var step: Step = .landing
 
     // Quiz answers.
     @State private var experience = ""
@@ -40,6 +41,15 @@ struct WelcomeScreen: View {
         ZStack {
             Color(.systemBackground).ignoresSafeArea()
             switch step {
+            case .landing:
+                LandingScreen(
+                    onGetStarted: { advance(to: .goal) },
+                    onSignedIn: {
+                        // Existing account — no quiz, no onboarding paywall.
+                        quizDone = true
+                        onDone()
+                    }
+                )
             case .goal:
                 quiz(title: "Do you want to get better at chess?", selection: $goal, options: [
                     ("flame.fill", "Yes — that's why I'm here", "improve"),
@@ -96,15 +106,19 @@ struct WelcomeScreen: View {
             case .promise:
                 promisePage
             case .signup:
-                SignupPage(onSignedIn: {
-                    // Sign-up is required; after it, show the soft paywall
-                    // (unless they already have a subscription).
-                    if container.entitlements.isPremium {
-                        onDone()
-                    } else {
-                        withAnimation { step = .paywall }
-                    }
-                })
+                SignupPage(
+                    onSignedIn: {
+                        // Sign-up is required; after it, show the soft paywall
+                        // (unless they already have a subscription).
+                        if container.entitlements.isPremium {
+                            onDone()
+                        } else {
+                            withAnimation { step = .paywall }
+                        }
+                    },
+                    // Existing account — straight into the app, no paywall.
+                    onExistingSignIn: onDone
+                )
                 .onAppear { container.sync.track("signup_viewed") }
             case .paywall:
                 OnboardingPaywall(onFinish: onDone)
@@ -136,13 +150,13 @@ struct WelcomeScreen: View {
         onContinue: @escaping () -> Void
     ) -> some View {
         QuizScaffold(
-            progress: Double(step.rawValue + 1) / 9.0,
+            progress: Double(step.rawValue) / 9.0,
             title: title,
             subtitle: subtitle,
             canContinue: !selection.wrappedValue.isEmpty,
-            onBack: step == .goal ? nil : {
+            onBack: {
                 container.sync.track("quiz_back", ["from": String(describing: step)])
-                withAnimation { step = Step(rawValue: step.rawValue - 1) ?? .goal }
+                withAnimation { step = Step(rawValue: step.rawValue - 1) ?? .landing }
             },
             onContinue: onContinue
         ) {
@@ -162,7 +176,7 @@ struct WelcomeScreen: View {
 
     private var ratingPage: some View {
         QuizScaffold(
-            progress: Double(step.rawValue + 1) / 9.0,
+            progress: Double(step.rawValue) / 9.0,
             title: "Do you know your rating?",
             subtitle: "From chess.com, lichess, or a club.",
             canContinue: true,
@@ -470,8 +484,11 @@ private struct SignupPage: View {
     @Environment(DependencyContainer.self) private var container
     /// Sign-up is required to continue — called once a session exists.
     let onSignedIn: () -> Void
+    /// "Already have an account? Sign In" — skips the onboarding paywall.
+    let onExistingSignIn: () -> Void
 
     @State private var showEmailSheet = false
+    @State private var showSignInSheet = false
     @State private var busy = false
 
     var body: some View {
@@ -493,7 +510,7 @@ private struct SignupPage: View {
                     .frame(height: 54)
                     .clipShape(Capsule())
 
-                signupPill(label: "Sign in with Google", icon: "globe") {
+                signupPill(label: "Sign up with Google", icon: "globe") {
                     container.sync.track("signup_method_tapped", ["method": "google"])
                     busy = true
                     Task { @MainActor in
@@ -503,10 +520,23 @@ private struct SignupPage: View {
                     }
                 }
 
-                signupPill(label: "Continue with email", icon: "envelope") {
+                signupPill(label: "Sign up with email", icon: "envelope") {
                     container.sync.track("signup_method_tapped", ["method": "email"])
                     showEmailSheet = true
                 }
+
+                HStack(spacing: 4) {
+                    Text("Already have an account?")
+                        .foregroundStyle(.secondary)
+                    Button("Sign In") {
+                        container.sync.track("signup_method_tapped", ["method": "existing"])
+                        showSignInSheet = true
+                    }
+                    .fontWeight(.semibold)
+                    .buttonStyle(.plain)
+                }
+                .font(.subheadline)
+                .padding(.top, 8)
             }
             .padding(.horizontal, 24)
             .padding(.bottom, 34)
@@ -519,6 +549,12 @@ private struct SignupPage: View {
             AccountSheet(sync: container.sync)
                 .onDisappear {
                     if container.sync.isSignedIn { onSignedIn() }
+                }
+        }
+        .sheet(isPresented: $showSignInSheet) {
+            AccountSheet(sync: container.sync)
+                .onDisappear {
+                    if container.sync.isSignedIn { onExistingSignIn() }
                 }
         }
     }
