@@ -143,18 +143,19 @@ struct OnboardingPaywall: View {
                         }
                     }
                     Text(blurb).font(.caption).foregroundStyle(.secondary)
-                    // The real charge on its own row — Apple flags per-month
-                    // pricing that hides the annual lump sum.
-                    if isAnnual, let product {
-                        Text("\(product.displayPrice) billed annually")
-                            .font(.caption2.weight(.medium)).foregroundStyle(.secondary)
-                    }
                 }
                 Spacer()
-                VStack(alignment: .trailing, spacing: 0) {
-                    Text(isAnnual ? (product.map(perMonth) ?? "—") : (product?.displayPrice ?? "—"))
-                        .font(.headline.monospacedDigit())
-                    Text("/mo").font(.caption2).foregroundStyle(.secondary)
+                // The billed amount is the dominant price (App Store 3.1.2(c));
+                // the per-month equivalent stays subordinate in size and color.
+                VStack(alignment: .trailing, spacing: 1) {
+                    Text(product?.displayPrice ?? "—")
+                        .font(.title3.weight(.bold).monospacedDigit())
+                    Text(isAnnual ? "per year" : "per month")
+                        .font(.caption2).foregroundStyle(.secondary)
+                    if isAnnual, let product {
+                        Text("≈ \(perMonth(product))/mo")
+                            .font(.caption2).foregroundStyle(.tertiary)
+                    }
                 }
             }
             .padding(16)

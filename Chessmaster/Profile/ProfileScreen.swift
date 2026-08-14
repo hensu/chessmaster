@@ -16,6 +16,9 @@ struct ProfileScreen: View {
     @State private var paywallSource = "profile_upgrade"
     @State private var showAccountSheet = false
     @State private var accountEmail: String?
+    @State private var confirmDeleteAccount = false
+    @State private var deletingAccount = false
+    @State private var deleteAccountFailed = false
     @State private var playerReview: PlayerReview?
     @State private var reviewLoading = false
     @State private var reviewMessage: String?
@@ -219,6 +222,17 @@ struct ProfileScreen: View {
                     Button("Sign out", role: .destructive) {
                         Task { await container.sync.signOut() }
                     }
+                    Button(role: .destructive) {
+                        confirmDeleteAccount = true
+                    } label: {
+                        if deletingAccount {
+                            HStack { Text("Deleting account…"); Spacer(); ProgressView() }
+                        } else {
+                            Text("Delete account")
+                        }
+                    }
+                    .disabled(deletingAccount)
+                    .accessibilityIdentifier("deleteAccount")
                 case .error(let message):
                     Label(message, systemImage: "exclamationmark.icloud")
                         .foregroundStyle(.red)
@@ -238,6 +252,24 @@ struct ProfileScreen: View {
         }
         .sheet(isPresented: $showAccountSheet) {
             AccountSheet(sync: container.sync)
+        }
+        .alert("Delete your account?", isPresented: $confirmDeleteAccount) {
+            Button("Delete", role: .destructive) {
+                Task {
+                    deletingAccount = true
+                    let ok = await container.sync.deleteAccount()
+                    deletingAccount = false
+                    if ok { accountEmail = nil } else { deleteAccountFailed = true }
+                }
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This permanently deletes your account and all synced data — games, ratings, and coaching reports. Local games on this device are kept. This can't be undone.")
+        }
+        .alert("Couldn't delete account", isPresented: $deleteAccountFailed) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Please check your connection and try again.")
         }
     }
 

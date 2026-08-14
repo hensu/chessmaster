@@ -437,6 +437,28 @@ public final class SyncService {
         state = .signedOut
     }
 
+    /// Permanently deletes the account server-side (App Store 5.1.1(v)) —
+    /// the backend removes the auth user and every owned row cascades — then
+    /// clears the local session. Returns false if the server call failed.
+    public func deleteAccount() async -> Bool {
+        guard let client else { return false }
+        struct Response: Decodable, Sendable { let deleted: Bool }
+        do {
+            let _: Response = try await invokeFunction("delete-account", body: [String: String]())
+        } catch {
+            return false
+        }
+        track("account_deleted")
+        hasRemoteToken = false
+        deviceTokenHex = nil
+        // The server session is already revoked with the user; only local
+        // sign-out can succeed.
+        try? await client.auth.signOut(scope: .local)
+        userID = nil
+        state = .signedOut
+        return true
+    }
+
     // MARK: - Edge Functions
 
     /// Invokes a backend Edge Function with the caller's session JWT and
