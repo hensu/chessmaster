@@ -79,6 +79,7 @@ struct GameScreen: View {
         }
         .padding(.horizontal, 8)
         .navigationTitle(model.title)
+        .trackScreen("Game")
         .navigationBarTitleDisplayMode(.inline)
         .navigationBarBackButtonHidden(model.session.status.isPlaying)
         .confirmationDialog("Resign this game?", isPresented: $model.showResignConfirm, titleVisibility: .visible) {

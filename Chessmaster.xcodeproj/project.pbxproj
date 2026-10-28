@@ -25,12 +25,14 @@
 		29B0166D044AD2690B11E3FC /* RatingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A4856FB637E078C558B6C0B /* RatingTests.swift */; };
 		3258B26934F50C7CAB1E6308 /* AnalysisPrefetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3353EE908401E16FAD9D2F29 /* AnalysisPrefetcher.swift */; };
 		327B4F145F5D01DD189C2CAE /* SettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 95BD50F20090FD2501064D29 /* SettingsScreen.swift */; };
+		32B18AF5EBC1A4960BD85030 /* CoachingGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = A19180D2606B6A58FCA62456 /* CoachingGenerator.swift */; };
 		3304794CA2D02634A9A039EE /* RatingStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3669865EDEC20BDD5F237D5 /* RatingStore.swift */; };
 		39EABF381E9523B7E99886CF /* ClockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 080C07EF6CA7F8DF1BA86BA4 /* ClockView.swift */; };
 		3B3A88763AE458296EB4C7EF /* PremiumTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76A502CAA1DED324BE769D30 /* PremiumTests.swift */; };
 		3DAE95ECEAB971DB62941656 /* LearnScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 153C13EF98CD078C7B8BB360 /* LearnScreen.swift */; };
 		40BE60BAF733DE51E4C6C425 /* LiveCoachingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D118C3CC3859CE67056E5F1F /* LiveCoachingTests.swift */; };
 		410328E5D34AC424A2EBC56D /* AppPaywall.swift in Sources */ = {isa = PBXBuildFile; fileRef = F42DB7C22C6DAF6190D0EBA6 /* AppPaywall.swift */; };
+		417D74CF0B4FC489472D461D /* ScreenTracking.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9168F748E7D93F7604CE709 /* ScreenTracking.swift */; };
 		449040F571431554BD0BAAD2 /* AnalysisTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A5B70393E5AA67F4AB686C64 /* AnalysisTests.swift */; };
 		460469ACA119FF4552ED2CCD /* StoreShotsTest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7951C83C4A4AA5FBAF2D634A /* StoreShotsTest.swift */; };
 		4A66156D57D8DD6CBA4B3627 /* LessonScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31B14C01D3B7B71E766D5DE3 /* LessonScreen.swift */; };
@@ -51,6 +53,7 @@
 		98487A226A62E1DF80413663 /* nn-c288c895ea92.nnue in Resources */ = {isa = PBXBuildFile; fileRef = 19FDD251C700D104CDBA1634 /* nn-c288c895ea92.nnue */; };
 		9CAA81372003265F8CFB0F83 /* ClockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6658F822F21189C7130E7C3 /* ClockTests.swift */; };
 		A79D9B1B39BD0F3369C6D22F /* AppRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1C930946C93603609BFCB2 /* AppRouter.swift */; };
+		A9DB5EE4419EEC09CFACCE9B /* AutoCoach.swift in Sources */ = {isa = PBXBuildFile; fileRef = 610E23E7E136B08042B04277 /* AutoCoach.swift */; };
 		AC33AE4F7AE770A3F60A748B /* ChessDomain in Frameworks */ = {isa = PBXBuildFile; productRef = AFD1EBBBC592159FAB27D129 /* ChessDomain */; };
 		AD2D350EA4EE1A05250A35E6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 1DD2AF5BE0533DC371423886 /* Assets.xcassets */; };
 		AEEFBCBEDB338FE3CCA7749D /* PersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7CA4FAB5A8888A81F2A83A6 /* PersistenceTests.swift */; };
@@ -123,6 +126,7 @@
 		590A590FE53E9390D1813D61 /* OnboardingPaywall.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingPaywall.swift; sourceTree = "<group>"; };
 		591140F6698E8D551CB2CFA0 /* CoachingModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachingModels.swift; sourceTree = "<group>"; };
 		5E3C725C84F48E94CACE977D /* LearnModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearnModels.swift; sourceTree = "<group>"; };
+		610E23E7E136B08042B04277 /* AutoCoach.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AutoCoach.swift; sourceTree = "<group>"; };
 		6D1C930946C93603609BFCB2 /* AppRouter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppRouter.swift; sourceTree = "<group>"; };
 		6F030CF6B7511568C3C844D1 /* ChessDomain */ = {isa = PBXFileReference; lastKnownFileType = folder; name = ChessDomain; path = Packages/ChessDomain; sourceTree = SOURCE_ROOT; };
 		735B6699DB3002683E63C648 /* AudioKitChess */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AudioKitChess; path = Packages/AudioKitChess; sourceTree = SOURCE_ROOT; };
@@ -145,8 +149,10 @@
 		9CA68C5D9F7B60986D8A9507 /* WelcomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeScreen.swift; sourceTree = "<group>"; };
 		A16B8C95A8AB76267847ABFC /* HomeScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeScreen.swift; sourceTree = "<group>"; };
 		A1727D1DE66BFC75B4B794D2 /* StockfishNets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StockfishNets.swift; sourceTree = "<group>"; };
+		A19180D2606B6A58FCA62456 /* CoachingGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachingGenerator.swift; sourceTree = "<group>"; };
 		A2C9ED347E93B0B2FD7BAE25 /* puzzles.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = puzzles.json; sourceTree = "<group>"; };
 		A5B70393E5AA67F4AB686C64 /* AnalysisTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisTests.swift; sourceTree = "<group>"; };
+		A9168F748E7D93F7604CE709 /* ScreenTracking.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenTracking.swift; sourceTree = "<group>"; };
 		ACA7532019C2EE84779B6A99 /* LearnTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearnTests.swift; sourceTree = "<group>"; };
 		B1073E71D7E9DC5D8D12430F /* PostGameInsightsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PostGameInsightsTests.swift; sourceTree = "<group>"; };
 		BB773F4A10187306BCBE7211 /* GameViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewModel.swift; sourceTree = "<group>"; };
@@ -219,6 +225,7 @@
 				9C90C6BEC5D4C976B91B3B43 /* DependencyContainer.swift */,
 				1F94E129CCDDADCCF43ACDFA /* Info.plist */,
 				933FA84669B0812A7A075DC3 /* RootView.swift */,
+				A9168F748E7D93F7604CE709 /* ScreenTracking.swift */,
 				A4ED56677D124B9D27068E3C /* Analysis */,
 				86457A5F89A2144B55ECB296 /* Coaching */,
 				F98DCAD848A1B075BFDC7837 /* Game */,
@@ -265,6 +272,7 @@
 			isa = PBXGroup;
 			children = (
 				EA15BBDFDCEDCBA351FC319C /* AdaptiveLevel.swift */,
+				610E23E7E136B08042B04277 /* AutoCoach.swift */,
 				A16B8C95A8AB76267847ABFC /* HomeScreen.swift */,
 				C84F17D5931B0034CC30D7FD /* SignupNudge.swift */,
 				E2C0147B49877B7A9A7FF87E /* StreakNotifier.swift */,
@@ -315,6 +323,7 @@
 		86457A5F89A2144B55ECB296 /* Coaching */ = {
 			isa = PBXGroup;
 			children = (
+				A19180D2606B6A58FCA62456 /* CoachingGenerator.swift */,
 				591140F6698E8D551CB2CFA0 /* CoachingModels.swift */,
 				C42F1B7D7AB5AC28217184C0 /* CoachingReportView.swift */,
 				98C8FA9D7BDE02060B9FE6CB /* PlayerReviewModels.swift */,
@@ -562,9 +571,11 @@
 				410328E5D34AC424A2EBC56D /* AppPaywall.swift in Sources */,
 				A79D9B1B39BD0F3369C6D22F /* AppRouter.swift in Sources */,
 				01F862D7DD61BA1F559B8D73 /* AppleSignInButton.swift in Sources */,
+				A9DB5EE4419EEC09CFACCE9B /* AutoCoach.swift in Sources */,
 				22A111006ABFB3CDCDAA6AB1 /* ChessmasterApp.swift in Sources */,
 				39EABF381E9523B7E99886CF /* ClockView.swift in Sources */,
 				14C5DD2E1DA64079408DA5D5 /* CoachVoice.swift in Sources */,
+				32B18AF5EBC1A4960BD85030 /* CoachingGenerator.swift in Sources */,
 				7D35B47D369CA70425DA082E /* CoachingModels.swift in Sources */,
 				02E7556C1C02D2B31025DCC2 /* CoachingReportView.swift in Sources */,
 				B1AFA194E3FE9DAF35E10C0A /* DependencyContainer.swift in Sources */,
@@ -589,6 +600,7 @@
 				3304794CA2D02634A9A039EE /* RatingStore.swift in Sources */,
 				19DB343921A76C329AE6D5A7 /* ReengagementNotifier.swift in Sources */,
 				B7EB9FFA98E5C631544026AD /* RootView.swift in Sources */,
+				417D74CF0B4FC489472D461D /* ScreenTracking.swift in Sources */,
 				327B4F145F5D01DD189C2CAE /* SettingsScreen.swift in Sources */,
 				11FF51C3F615DFE8ACE11334 /* SignupNudge.swift in Sources */,
 				EB64CCFD387DAC5B01106BAE /* StockfishNets.swift in Sources */,

@@ -244,6 +244,7 @@ struct ProfileScreen: View {
             }
         }
         .navigationTitle("Profile")
+        .trackScreen("Profile")
         .onAppear(perform: reload)
         .task { accountEmail = await container.sync.accountEmail }
         .onChange(of: category) { reload() }

@@ -23,6 +23,7 @@ struct AppPaywall: View {
             }
         )
         .onAppear { container.sync.track("paywall_viewed", ["source": source]) }
+        .trackScreen("Paywall")
         .onDisappear {
             // A successful purchase dismisses the sheet too; only count
             // walk-aways.

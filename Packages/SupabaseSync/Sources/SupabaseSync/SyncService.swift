@@ -310,7 +310,71 @@ public final class SyncService {
     /// Analytics binary is closed-source and GPL-incompatible with the
     /// Stockfish-derived client). Session params make events count toward
     /// GA4 realtime/engagement reports.
-    private static let gaSessionID = String(Int(Date().timeIntervalSince1970))
+    private var gaSessionID = String(Int(Date().timeIntervalSince1970))
+    /// Start of the foreground time not yet reported to GA; nil while
+    /// backgrounded. Each hit carries the time since the previous one, so
+    /// GA's engagement time reflects real foreground use.
+    private var engagementStart: Date? = Date()
+    private var backgroundedAt: Date?
+
+    /// App came to the foreground. A return after GA's 30-minute session
+    /// timeout starts a new session, matching the Firebase SDK.
+    public func appBecameActive() {
+        if let backgroundedAt, Date().timeIntervalSince(backgroundedAt) > 30 * 60 {
+            gaSessionID = String(Int(Date().timeIntervalSince1970))
+        }
+        backgroundedAt = nil
+        if engagementStart == nil { engagementStart = Date() }
+    }
+
+    /// App left the foreground: flush the unreported foreground time.
+    public func appResignedActive() {
+        guard engagementStart != nil else { return }
+        track("user_engagement")
+        engagementStart = nil
+        backgroundedAt = Date()
+    }
+
+    /// GA "Pages and screens" view. The property is a web stream fed by the
+    /// Measurement Protocol, so screens are sent as page_view.
+    public func trackScreen(_ name: String) {
+        track("page_view", [
+            "page_title": name,
+            "page_location": "app://chessai/\(name.lowercased().replacingOccurrences(of: " ", with: "-"))",
+        ])
+    }
+
+    /// Milliseconds of foreground time since the last hit (min 1 — GA only
+    /// counts a user as active when engagement_time_msec > 0).
+    private func takeEngagementMsec() -> Int {
+        guard let start = engagementStart else { return 1 }
+        let now = Date()
+        engagementStart = now
+        return max(1, Int(now.timeIntervalSince(start) * 1000))
+    }
+
+    /// GA4 MP `device` block, computed once per launch.
+    private static let gaDevice: [String: String] = {
+        var info = utsname()
+        uname(&info)
+        let model = withUnsafeBytes(of: &info.machine) { raw in
+            String(decoding: raw.prefix(while: { $0 != 0 }), as: UTF8.self)
+        }
+        let os = ProcessInfo.processInfo.operatingSystemVersion
+        #if os(iOS)
+        let osName = "iOS"
+        #else
+        let osName = "macOS"
+        #endif
+        return [
+            "category": "mobile",
+            "operating_system": osName,
+            "operating_system_version": "\(os.majorVersion).\(os.minorVersion).\(os.patchVersion)",
+            "model": model,
+            "brand": "Apple",
+            "language": Locale.preferredLanguages.first ?? Locale.current.identifier,
+        ]
+    }()
 
     private func sendToGoogleAnalytics(name: String, props: [String: String]) {
         guard
@@ -326,8 +390,8 @@ public final class SyncService {
         guard let url = components.url else { return }
 
         var params: [String: Any] = [
-            "session_id": Self.gaSessionID,
-            "engagement_time_msec": "100",
+            "session_id": gaSessionID,
+            "engagement_time_msec": String(takeEngagementMsec()),
         ]
         for (key, value) in props { params[key] = String(value.prefix(100)) }
         var body: [String: Any] = [
@@ -337,6 +401,12 @@ public final class SyncService {
         if let userID {
             body["user_id"] = userID.uuidString
         }
+        // MP hits get no IP geolocation or device detection — without these
+        // GA shows Country/Device/OS as "(not set)".
+        if let country = Locale.current.region?.identifier {
+            body["user_location"] = ["country_id": country]
+        }
+        body["device"] = Self.gaDevice
         // GA caps user-property values at 36 chars and names at 24 —
         // keep flag keys to 19 chars or shorter.
         var properties: [String: [String: String]] = [
@@ -372,6 +442,24 @@ public final class SyncService {
             let rows = try JSONSerialization.jsonObject(with: response.data) as? [[String: Any]]
             guard let report = rows?.first?["report"], !(report is NSNull) else { return nil }
             return try JSONSerialization.data(withJSONObject: report)
+        } catch {
+            return nil
+        }
+    }
+
+    /// Whether this user has ever received a completed coaching report (RLS:
+    /// own rows). nil when unknown (signed out / offline) — callers must
+    /// treat that as "don't act".
+    public func hasCompletedCoachingReport() async -> Bool? {
+        guard let client, isSignedIn else { return nil }
+        do {
+            let response = try await client.from("coaching_reports")
+                .select("id")
+                .eq("status", value: "complete")
+                .limit(1)
+                .execute()
+            let rows = try JSONSerialization.jsonObject(with: response.data) as? [[String: Any]]
+            return !(rows?.isEmpty ?? true)
         } catch {
             return nil
         }

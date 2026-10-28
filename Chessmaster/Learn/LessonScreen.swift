@@ -58,6 +58,7 @@ struct LessonScreen: View {
         }
         .padding(.horizontal, 8)
         .navigationTitle(lesson.title)
+        .trackScreen("Lesson")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             model.attach(container: container, progress: progress)

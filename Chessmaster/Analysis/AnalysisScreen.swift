@@ -12,16 +12,20 @@ struct AnalysisScreen: View {
     @Environment(DependencyContainer.self) private var container
     private let openAtWorstMoment: Bool
     private let source: String
+    /// Opened from the proactive first report: land on the report itself.
+    private let scrollToCoaching: Bool
     /// onAppear re-fires when the training cover dismisses; count one open.
     @State private var trackedOpen = false
     /// Drives the breathing emerald glow on the coaching CTA.
     @State private var ctaGlow = false
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    init(game: GameRecord, openAtWorstMoment: Bool = false, source: String = "history") {
+    init(game: GameRecord, openAtWorstMoment: Bool = false, source: String = "history",
+         scrollToCoaching: Bool = false) {
         _model = State(initialValue: AnalysisViewModel(game: game))
         self.openAtWorstMoment = openAtWorstMoment
         self.source = source
+        self.scrollToCoaching = scrollToCoaching
     }
 
     var body: some View {
@@ -57,8 +61,14 @@ struct AnalysisScreen: View {
                 }
                 .padding(.vertical, 8)
             }
+            .task {
+                guard scrollToCoaching else { return }
+                try? await Task.sleep(for: .milliseconds(350))   // let the push settle
+                withAnimation { proxy.scrollTo("coaching", anchor: .top) }
+            }
         }
         .navigationTitle("Analysis")
+        .trackScreen("Analysis")
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {

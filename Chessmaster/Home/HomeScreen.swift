@@ -26,6 +26,14 @@ struct HomeScreen: View {
     @State private var signupPrompt: SignupNudge.Prompt?
     @State private var nudgeAccepted = false
     @State private var showNudgeAccountSheet = false
+    /// Proactive first AI report (see AutoCoach): generated in the
+    /// background, presented only while Home is on screen.
+    @State private var autoCoachRunning = false
+    @State private var autoCoachPending: AutoCoach.Ready?
+    @State private var autoCoachShown: AutoCoach.Ready?
+    @State private var autoCoachAccepted = false
+    @State private var autoCoachGame: GameRecord?
+    @State private var isVisible = false
     @Environment(DependencyContainer.self) private var container
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 3)
@@ -131,6 +139,7 @@ struct HomeScreen: View {
             }
         }
         .navigationTitle("Chess AI")
+        .trackScreen("Home")
         .navigationBarTitleDisplayMode(.inline)
         .sheet(isPresented: $showCustom) {
             CustomTimeSheet { tc in
@@ -152,11 +161,36 @@ struct HomeScreen: View {
                 pendingConfig = config
             }
             evaluateSignupNudge()
+            isVisible = true
+            evaluateAutoCoach()
         }
+        .onDisappear { isVisible = false }
         // The nudge waits for the session restore to settle; when it does,
         // re-check (onAppear may have run while auth was still unknown).
         .onChange(of: container.sync.sessionRestored) { _, _ in
             evaluateSignupNudge()
+            evaluateAutoCoach()
+        }
+        // Entitlements resolve asynchronously at launch, and a purchase can
+        // land mid-session — either can make the first report due.
+        .onChange(of: container.entitlements.plan) { _, _ in evaluateAutoCoach() }
+        .onChange(of: container.sync.isSignedIn) { _, _ in evaluateAutoCoach() }
+        .sheet(item: $autoCoachShown, onDismiss: {
+            if autoCoachAccepted {
+                autoCoachAccepted = false
+            } else {
+                container.sync.track("auto_coach_later")
+            }
+        }) { ready in
+            AutoCoachCard(ready: ready) {
+                container.sync.track("auto_coach_opened")
+                autoCoachAccepted = true
+                autoCoachShown = nil
+                autoCoachGame = ready.game
+            }
+        }
+        .navigationDestination(item: $autoCoachGame) { game in
+            AnalysisScreen(game: game, source: "auto_coach", scrollToCoaching: true)
         }
         .sheet(item: $signupPrompt, onDismiss: {
             if nudgeAccepted {
@@ -193,6 +227,31 @@ struct HomeScreen: View {
         ) else { return }
         signupPrompt = prompt
         container.sync.track("signup_nudge_shown", ["trigger": prompt.trigger])
+    }
+
+    /// Kicks off the proactive first report when due, and presents a
+    /// finished one once Home is visible with nothing else on top.
+    private func evaluateAutoCoach() {
+        presentAutoCoachIfReady()
+        guard container.sync.sessionRestored, !autoCoachRunning, autoCoachPending == nil,
+              let game = AutoCoach.candidate(
+                games: (try? container.games.recentGames()) ?? [], container: container)
+        else { return }
+        autoCoachRunning = true
+        Task {
+            autoCoachPending = await AutoCoach.run(for: game, container: container)
+            autoCoachRunning = false
+            presentAutoCoachIfReady()
+        }
+    }
+
+    private func presentAutoCoachIfReady() {
+        guard let ready = autoCoachPending, isVisible,
+              pendingConfig == nil, pendingResume == nil, signupPrompt == nil,
+              autoCoachShown == nil else { return }
+        autoCoachPending = nil
+        autoCoachShown = ready
+        container.sync.track("auto_coach_shown")
     }
 
     // MARK: - Per-game overrides (defaults live in Profile)

@@ -63,6 +63,7 @@ struct PuzzleScreen: View {
         }
         .padding(.horizontal, 8)
         .navigationTitle(category.title)
+        .trackScreen("Puzzle")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             model.attach(container: container, progress: progress)

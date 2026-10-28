@@ -93,20 +93,13 @@ final class AnalysisViewModel {
         container.sync.track("coaching_requested")
         coachingLoading = true
         coachingError = nil
-        let gameID = game.id.lowercased()
+        let gameID = game.id
         Task { @MainActor [weak self] in
             do {
                 guard let sync = self?.container?.sync else { return }
-                if !sync.isSignedIn {
-                    await sync.signInAnonymously()
-                }
-                await sync.pushPending()   // the game must exist server-side
-                let response: CoachingResponse = try await sync.invokeFunction(
-                    "generate-coaching-report",
-                    body: ["game_id": gameID]
-                )
-                self?.coachingReport = response.report.report
-                if let report = response.report.report {
+                let report = try await CoachingGenerator.generate(gameID: gameID, sync: sync)
+                self?.coachingReport = report
+                if let report {
                     self?.persistReport(report)
                 } else {
                     self?.coachingError = "The coach couldn't analyze this game."

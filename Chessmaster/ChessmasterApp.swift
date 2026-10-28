@@ -28,6 +28,9 @@ struct ChessmasterApp: App {
                 }
         }
         .onChange(of: scenePhase) { _, phase in
+            // GA engagement time / session boundaries follow the foreground.
+            if phase == .active { container.sync.appBecameActive() }
+            if phase == .background { container.sync.appResignedActive() }
             // Stockfish burns CPU; never leave a search running in background.
             if phase == .background {
                 Task { await UCIEngine.shared.stopSearch() }

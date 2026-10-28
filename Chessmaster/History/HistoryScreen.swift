@@ -34,6 +34,7 @@ struct HistoryScreen: View {
             }
         }
         .navigationTitle("History")
+        .trackScreen("History")
         .onAppear {
             games = (try? container.games.recentGames()) ?? []
         }

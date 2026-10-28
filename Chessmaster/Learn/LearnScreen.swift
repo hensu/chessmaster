@@ -44,6 +44,7 @@ struct LearnScreen: View {
         }
         .background(Color(.systemGroupedBackground))
         .navigationTitle("Learn")
+        .trackScreen("Learn")
         .navigationDestination(for: PuzzleCategory.self) { PuzzleScreen(category: $0) }
         .navigationDestination(for: Lesson.self) { LessonScreen(lesson: $0) }
     }
