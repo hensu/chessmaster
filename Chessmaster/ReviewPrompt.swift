@@ -12,7 +12,7 @@ import UserNotifications
 enum ReviewPrompt {
     private static let lastRequestKey = "review.lastRequestedAt"
     private static let versionKey = "review.lastRequestedVersion"
-    private static let minFinishedGames = 5
+    private static let minFinishedGames = 1
     private static let minDaysBetween = 30.0
     private static let puzzleRunTarget = 5
     /// Clean puzzle solves this launch.

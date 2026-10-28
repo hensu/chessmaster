@@ -76,7 +76,7 @@ service this client talks to.
 
 ## App Store review prompt
 
-- `Chessmaster/ReviewPrompt.swift` — `AppStore.requestReview` at happy moments: engine-game win (GameViewModel), leaving Analysis with a coaching report, 5 first-try puzzle solves in a launch. Gates: ≥5 finished engine games, once per app version, ≥30 days apart, skipped while notification permission is still undetermined (that alert is also asked after a win). No pre-screen (guideline 5.6.1). Event `review_requested` (`trigger`).
+- `Chessmaster/ReviewPrompt.swift` — `AppStore.requestReview` at happy moments: engine-game win (GameViewModel), leaving Analysis with a coaching report, 5 first-try puzzle solves in a launch. Gates: ≥1 finished engine game, once per app version, ≥30 days apart, skipped while notification permission is still undetermined (that alert is also asked after a win). No pre-screen (guideline 5.6.1). Event `review_requested` (`trigger`).
 
 ## Learn tab (puzzles + lessons)
 
