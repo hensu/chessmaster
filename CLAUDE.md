@@ -87,5 +87,6 @@ service this client talks to.
 
 ## Conventions
 
+- **Always push to GitHub right after committing** (`git push`, including `main` after a merge) — never leave commits local. Standing instruction from the owner; don't ask.
 - Keep this file updated when architecture, process, or backend facts change — future sessions rely on it (past progress was lost because it didn't exist until 2026-07-13).
 - UI test launch args gate app behavior: `--uitest`, `--reset-welcome` (forces full onboarding quiz), `--uitest-signin-*`, `--autostart*`.
