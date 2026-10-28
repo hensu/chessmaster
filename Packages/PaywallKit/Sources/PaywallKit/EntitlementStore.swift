@@ -40,6 +40,8 @@ public final class EntitlementStore {
     public var isPremium: Bool { plan != .free }
     /// The latest transaction JWS, for server verification after purchase.
     public private(set) var latestTransactionJWS: String?
+    /// When the active plan's free trial ends; nil when not in a trial.
+    public private(set) var trialEndsAt: Date?
 
     private var updatesTask: Task<Void, Never>?
 
@@ -58,6 +60,7 @@ public final class EntitlementStore {
     /// Re-reads current entitlements (offline-friendly: StoreKit caches).
     public func refresh() async {
         var best = Plan.free
+        var trialEnd: Date?
         for await result in Transaction.currentEntitlements {
             guard case .verified(let transaction) = result,
                   transaction.revocationDate == nil else { continue }
@@ -65,9 +68,22 @@ public final class EntitlementStore {
             if productPlan > best {
                 best = productPlan
                 latestTransactionJWS = result.jwsRepresentation
+                trialEnd = Self.trialEnd(of: transaction)
             }
         }
+        trialEndsAt = trialEnd
         apply(best)
+    }
+
+    /// The expiration of an introductory-offer (free trial) period.
+    private static func trialEnd(of transaction: Transaction) -> Date? {
+        let isIntro: Bool
+        if #available(iOS 17.2, macOS 14.2, *) {
+            isIntro = transaction.offer?.type == .introductory
+        } else {
+            isIntro = transaction.offerType == .introductory
+        }
+        return isIntro ? transaction.expirationDate : nil
     }
 
     /// Purchase with the Supabase user UUID as appAccountToken so the backend
@@ -82,6 +98,7 @@ public final class EntitlementStore {
         case .success(let verification):
             if case .verified(let transaction) = verification {
                 latestTransactionJWS = verification.jwsRepresentation
+                trialEndsAt = Self.trialEnd(of: transaction)
                 await transaction.finish()
                 apply(Plan.plan(forProductID: transaction.productID))
                 return true

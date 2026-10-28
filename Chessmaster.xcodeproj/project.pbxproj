@@ -12,6 +12,7 @@
 		02E7556C1C02D2B31025DCC2 /* CoachingReportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C42F1B7D7AB5AC28217184C0 /* CoachingReportView.swift */; };
 		073529EA1A3E278A917D89DA /* puzzles.json in Resources */ = {isa = PBXBuildFile; fileRef = A2C9ED347E93B0B2FD7BAE25 /* puzzles.json */; };
 		09A8425B7EE8C307B1110B31 /* LearnTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACA7532019C2EE84779B6A99 /* LearnTests.swift */; };
+		113B624E7080E4C649C11355 /* ReviewPrompt.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E8434CBCDC7101F6E60E05C /* ReviewPrompt.swift */; };
 		11FF51C3F615DFE8ACE11334 /* SignupNudge.swift in Sources */ = {isa = PBXBuildFile; fileRef = C84F17D5931B0034CC30D7FD /* SignupNudge.swift */; };
 		14C5DD2E1DA64079408DA5D5 /* CoachVoice.swift in Sources */ = {isa = PBXBuildFile; fileRef = C5D22028A8E74E099AA3912D /* CoachVoice.swift */; };
 		1530D59563962BFA7EBB11E4 /* GamePersistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7E7E9AA29FB65B0FF792B46F /* GamePersistence.swift */; };
@@ -46,6 +47,7 @@
 		71984B00665DCCB9F7DCB65A /* EngineKit in Frameworks */ = {isa = PBXBuildFile; productRef = 1CEF6895CCC8F6F770C23EB1 /* EngineKit */; };
 		7D35B47D369CA70425DA082E /* CoachingModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 591140F6698E8D551CB2CFA0 /* CoachingModels.swift */; };
 		8A84FBA4F87C685BD9749B3D /* GameViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB773F4A10187306BCBE7211 /* GameViewModel.swift */; };
+		8A89439307DD2723499D863E /* CoachNudgeNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 371470DFAB25702427DE592A /* CoachNudgeNotifier.swift */; };
 		8BF0429D60A7B52A04195A82 /* RatingKit in Frameworks */ = {isa = PBXBuildFile; productRef = BB5C560AA775CB11299BBE89 /* RatingKit */; };
 		8C00973F7EFB38233D02E77E /* AnalysisScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29572AC62202C5EAC45ACF65 /* AnalysisScreen.swift */; };
 		8D0A96691EA0354428810614 /* OnboardingPaywall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 590A590FE53E9390D1813D61 /* OnboardingPaywall.swift */; };
@@ -113,10 +115,12 @@
 		29572AC62202C5EAC45ACF65 /* AnalysisScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisScreen.swift; sourceTree = "<group>"; };
 		2A3E14EA00423C432EA38ED5 /* WelcomeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WelcomeTests.swift; sourceTree = "<group>"; };
 		2DA50D27BA130D5806655A0C /* PlayFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PlayFlowTests.swift; sourceTree = "<group>"; };
+		2E8434CBCDC7101F6E60E05C /* ReviewPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewPrompt.swift; sourceTree = "<group>"; };
 		2EE12846F7E4FC7ACC4652A8 /* Chessmaster.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Chessmaster.entitlements; sourceTree = "<group>"; };
 		31B14C01D3B7B71E766D5DE3 /* LessonScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonScreen.swift; sourceTree = "<group>"; };
 		32338B9CDEF92C6560367E7B /* Chessmaster.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Chessmaster.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3353EE908401E16FAD9D2F29 /* AnalysisPrefetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisPrefetcher.swift; sourceTree = "<group>"; };
+		371470DFAB25702427DE592A /* CoachNudgeNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachNudgeNotifier.swift; sourceTree = "<group>"; };
 		3E9C1AB0E8619BEF579ED557 /* AnalysisKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AnalysisKit; path = Packages/AnalysisKit; sourceTree = SOURCE_ROOT; };
 		41D121DD055D51BACB66F9F9 /* PersistenceKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = PersistenceKit; path = Packages/PersistenceKit; sourceTree = SOURCE_ROOT; };
 		4A63FC7E699AF543CC54016D /* nn-37f18f62d772.nnue */ = {isa = PBXFileReference; path = "nn-37f18f62d772.nnue"; sourceTree = "<group>"; };
@@ -224,6 +228,7 @@
 				8F0873660DC6098701DE61E9 /* ChessmasterApp.swift */,
 				9C90C6BEC5D4C976B91B3B43 /* DependencyContainer.swift */,
 				1F94E129CCDDADCCF43ACDFA /* Info.plist */,
+				2E8434CBCDC7101F6E60E05C /* ReviewPrompt.swift */,
 				933FA84669B0812A7A075DC3 /* RootView.swift */,
 				A9168F748E7D93F7604CE709 /* ScreenTracking.swift */,
 				A4ED56677D124B9D27068E3C /* Analysis */,
@@ -304,6 +309,7 @@
 		6DAB55E62129C6587940F5D4 /* Notifications */ = {
 			isa = PBXGroup;
 			children = (
+				371470DFAB25702427DE592A /* CoachNudgeNotifier.swift */,
 				99160096A3BF1920CDB38A02 /* NotificationCoordinator.swift */,
 				017E40DBA022341C19965FCE /* NotificationPermission.swift */,
 				909AD89092D6C75E48CFADBC /* PushRegistration.swift */,
@@ -574,6 +580,7 @@
 				A9DB5EE4419EEC09CFACCE9B /* AutoCoach.swift in Sources */,
 				22A111006ABFB3CDCDAA6AB1 /* ChessmasterApp.swift in Sources */,
 				39EABF381E9523B7E99886CF /* ClockView.swift in Sources */,
+				8A89439307DD2723499D863E /* CoachNudgeNotifier.swift in Sources */,
 				14C5DD2E1DA64079408DA5D5 /* CoachVoice.swift in Sources */,
 				32B18AF5EBC1A4960BD85030 /* CoachingGenerator.swift in Sources */,
 				7D35B47D369CA70425DA082E /* CoachingModels.swift in Sources */,
@@ -599,6 +606,7 @@
 				21F52770139B8D2C503E7697 /* PuzzleScreen.swift in Sources */,
 				3304794CA2D02634A9A039EE /* RatingStore.swift in Sources */,
 				19DB343921A76C329AE6D5A7 /* ReengagementNotifier.swift in Sources */,
+				113B624E7080E4C649C11355 /* ReviewPrompt.swift in Sources */,
 				B7EB9FFA98E5C631544026AD /* RootView.swift in Sources */,
 				417D74CF0B4FC489472D461D /* ScreenTracking.swift in Sources */,
 				327B4F145F5D01DD189C2CAE /* SettingsScreen.swift in Sources */,

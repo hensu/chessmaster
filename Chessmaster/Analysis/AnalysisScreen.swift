@@ -107,7 +107,13 @@ struct AnalysisScreen: View {
         .onChange(of: model.trainingConfig) { _, config in
             if config != nil { container.coachVoice.stop() }
         }
-        .onDisappear { container.coachVoice.stop() }
+        .onDisappear {
+            container.coachVoice.stop()
+            // Just read an AI review — ask on the way out, not mid-read.
+            if model.coachingReport != nil, model.trainingConfig == nil {
+                ReviewPrompt.maybeRequest(trigger: "coaching_report", container: container)
+            }
+        }
         .sheet(isPresented: $model.showPaywall) {
             AppPaywall(source: model.paywallSource)
         }

@@ -24,6 +24,9 @@ enum ReengagementNotifier {
 
     static func refresh(container: DependencyContainer) {
         guard !ProcessInfo.processInfo.arguments.contains("--uitest") else { return }
+        // Rides the same hooks; independent of server push (which doesn't
+        // send coach nudges).
+        CoachNudgeNotifier.refresh(container: container)
         // Once the backend can push this signed-in user (token registered),
         // the server owns re-engagement — don't also fire local ones.
         if container.sync.isSignedIn, container.sync.hasRemoteToken {
@@ -141,7 +144,7 @@ enum ReengagementNotifier {
 
     /// The hour the player most often finishes games (median of last 30),
     /// defaulting to 7pm — so reminders land when they actually play.
-    private static func usualPlayHour(games: [GameRecord]) -> Int {
+    static func usualPlayHour(games: [GameRecord]) -> Int {
         let hours = games
             .filter { $0.opponentType == "engine" && $0.termination != "aborted" }
             .prefix(30)

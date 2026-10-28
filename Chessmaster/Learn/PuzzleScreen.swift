@@ -253,6 +253,9 @@ final class PuzzleViewModel {
                     "attempts": String(attempts + 1),
                     "hint": usedHint ? "true" : "false",
                 ])
+                if let container {
+                    ReviewPrompt.puzzleSolved(firstTry: attempts == 0 && !usedHint, container: container)
+                }
             } else {
                 phase = .opponentThinking
                 Task { @MainActor [weak self] in
