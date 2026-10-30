@@ -230,7 +230,7 @@ struct FriendLobbySheet: View {
             .buttonStyle(.bordered)
             .controlSize(.large)
 
-            Text("🎁 Finish a game together and you each get a free month of Diamond.")
+            Text("🎁 Finish a game together and you each get a free month of Diamond (claim within 30 days).")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)

@@ -217,6 +217,9 @@ struct HomeScreen: View {
                 try? await Task.sleep(for: .seconds(15))
             }
         }
+        .onChange(of: container.entitlements.redeemedOfferCode) { _, _ in
+            Task { await retireRedeemedRewards() }
+        }
         .sheet(isPresented: $showFriendLobby) {
             FriendLobbySheet()
                 .environment(container)
@@ -384,6 +387,7 @@ struct HomeScreen: View {
         guard container.sync.isSignedIn else { return }
         openFriendGames = await container.sync.openFriendGames()
         rewards = await container.sync.unredeemedReferralRewards()
+        await retireRedeemedRewards()
     }
 
     private func friendGameCard(_ game: FriendGameState) -> some View {
@@ -427,21 +431,28 @@ struct HomeScreen: View {
         }
     }
 
+    /// The card stays until Apple confirms the code was used (a current
+    /// subscription from an offer code) — backing out of the redeem sheet
+    /// keeps it.
+    private func retireRedeemedRewards() async {
+        guard container.entitlements.redeemedOfferCode, !rewards.isEmpty else { return }
+        for reward in rewards {
+            await container.sync.markReferralRedeemed(code: reward.code)
+        }
+        rewards = []
+    }
+
     private func rewardCard(_ reward: ReferralReward) -> some View {
         Button {
             container.sync.track("referral_redeem_tapped", ["role": reward.role])
             UIApplication.shared.open(reward.redeemURL(appID: "6790178402"))
-            Task {
-                await container.sync.markReferralRedeemed(code: reward.code)
-                rewards.removeAll { $0.code == reward.code }
-            }
         } label: {
             HStack(spacing: 12) {
                 Text("🎁").font(.title2)
                 VStack(alignment: .leading, spacing: 2) {
                     Text("You earned a free month of Diamond")
                         .font(.headline)
-                    Text("For playing a friend. Tap to redeem.")
+                    Text("For playing a friend. Claim by \(reward.claimBy.formatted(.dateTime.month(.abbreviated).day())).")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

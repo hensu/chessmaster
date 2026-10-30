@@ -61,9 +61,11 @@ public final class EntitlementStore {
     public func refresh() async {
         var best = Plan.free
         var trialEnd: Date?
+        var viaCode = false
         for await result in Transaction.currentEntitlements {
             guard case .verified(let transaction) = result,
                   transaction.revocationDate == nil else { continue }
+            if Self.isOfferCode(transaction) { viaCode = true }
             let productPlan = Plan.plan(forProductID: transaction.productID)
             if productPlan > best {
                 best = productPlan
@@ -72,7 +74,19 @@ public final class EntitlementStore {
             }
         }
         trialEndsAt = trialEnd
+        redeemedOfferCode = viaCode
         apply(best)
+    }
+
+    /// True once a current subscription came from an App Store offer code
+    /// (friend-game free month): the app then retires its reward card.
+    public private(set) var redeemedOfferCode = false
+
+    private static func isOfferCode(_ transaction: Transaction) -> Bool {
+        if #available(iOS 17.2, macOS 14.2, *) {
+            return transaction.offer?.type == .code
+        }
+        return transaction.offerType == .code
     }
 
     /// The expiration of an introductory-offer (free trial) period.

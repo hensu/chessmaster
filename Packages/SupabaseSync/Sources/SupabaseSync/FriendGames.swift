@@ -81,7 +81,18 @@ public struct RecentFriend: Decodable, Sendable, Hashable, Identifiable {
 public struct ReferralReward: Decodable, Sendable, Hashable, Identifiable {
     public let code: String
     public let role: String
+    public let assignedAt: Date
     public var id: String { code }
+
+    /// Rewards must be claimed within this window (urgency; the App Store
+    /// code itself is valid much longer).
+    public static let claimWindow: TimeInterval = 30 * 86_400
+    public var claimBy: Date { assignedAt.addingTimeInterval(Self.claimWindow) }
+
+    enum CodingKeys: String, CodingKey {
+        case code, role
+        case assignedAt = "assigned_at"
+    }
 
     /// Opens the App Store's redeem sheet with the code pre-filled.
     public func redeemURL(appID: String) -> URL {
@@ -199,9 +210,11 @@ extension SyncService {
 
     public func unredeemedReferralRewards() async -> [ReferralReward] {
         guard let client, isSignedIn else { return [] }
+        let since = Date.now.addingTimeInterval(-ReferralReward.claimWindow)
         return (try? await client.from("referral_codes")
-            .select("code, role")
+            .select("code, role, assigned_at")
             .is("redeemed_at", value: nil)
+            .gte("assigned_at", value: since.ISO8601Format())
             .execute().value) ?? []
     }
 
