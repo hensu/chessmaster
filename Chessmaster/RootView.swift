@@ -42,6 +42,7 @@ struct RootView: View {
         guard let code = container.pendingInviteCode, container.sync.sessionRestored else { return }
         guard container.sync.isSignedIn else {
             welcomePresented = false
+            if !inviteSignIn { container.sync.track("friend_signup_prompted") }
             inviteSignIn = true
             return
         }
@@ -183,6 +184,8 @@ struct RootView: View {
         }
         .onChange(of: container.sync.isSignedIn) { _, signedIn in
             guard signedIn else { return }
+            // Signed up / in to accept a friend's invite.
+            if container.pendingInviteCode != nil { container.sync.track("friend_signup_completed") }
             handleInvite()
             Push.registerIfSignedIn(container.sync)   // get a push token for the new session
             Task {

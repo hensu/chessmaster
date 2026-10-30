@@ -25,13 +25,21 @@ struct ChessmasterApp: App {
                 .environment(container.learnProgress)
                 .onOpenURL { url in
                     if let code = FriendInvite.code(from: url) {
+                        container.sync.track("friend_link_opened", [
+                            "via": url.scheme == "chessmaster" ? "web_page" : "link",
+                            "signed_in": container.sync.isSignedIn ? "true" : "false",
+                        ])
                         container.pendingInviteCode = code
                     } else {
                         GIDSignIn.sharedInstance.handle(url)
                     }
                 }
                 .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
-                    if let url = activity.webpageURL, let code = FriendInvite.code(from: url) {
+                    if let url = activity.webpageURL, let code = FriendInvite.code(from: url),
+                       container.pendingInviteCode != code {
+                        container.sync.track("friend_link_opened", [
+                            "via": "link", "signed_in": container.sync.isSignedIn ? "true" : "false",
+                        ])
                         container.pendingInviteCode = code
                     }
                 }

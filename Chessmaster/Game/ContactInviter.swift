@@ -11,7 +11,7 @@ final class ContactInviter: NSObject {
     static let shared = ContactInviter()
 
     private var onPick: ((_ name: String, _ phone: String) -> Void)?
-    private var onSent: ((Bool) -> Void)?
+    private var onSent: ((String) -> Void)?
 
     func pickPhone(_ completion: @escaping (_ name: String, _ phone: String) -> Void) {
         let picker = CNContactPickerViewController()
@@ -26,14 +26,15 @@ final class ContactInviter: NSObject {
 
     /// Opens Messages addressed to `phone` with `body`; falls back to an
     /// sms: link where the in-app composer isn't available (e.g. simulator).
-    func sendText(to phone: String, body: String, completion: ((Bool) -> Void)? = nil) {
+    /// `completion` gets "sent", "cancelled", "failed" or "sms_link".
+    func sendText(to phone: String, body: String, completion: ((String) -> Void)? = nil) {
         guard MFMessageComposeViewController.canSendText() else {
             var parts = URLComponents()
             parts.scheme = "sms"
             parts.path = phone
             parts.queryItems = [URLQueryItem(name: "body", value: body)]
             if let url = parts.url { UIApplication.shared.open(url) }
-            completion?(true)
+            completion?("sms_link")
             return
         }
         let composer = MFMessageComposeViewController()
@@ -92,7 +93,7 @@ extension ContactInviter: MFMessageComposeViewControllerDelegate {
                                                   didFinishWith result: MessageComposeResult) {
         MainActor.assumeIsolated {
             controller.dismiss(animated: true)
-            onSent?(result == .sent)
+            onSent?(result == .sent ? "sent" : result == .cancelled ? "cancelled" : "failed")
             onSent = nil
         }
     }

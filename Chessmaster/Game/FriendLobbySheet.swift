@@ -59,6 +59,7 @@ struct FriendLobbySheet: View {
         }
         .task {
             recent = await container.sync.recentFriends()
+            container.sync.track("friend_lobby_loaded", ["friends": String(recent.count)])
         }
         .onDisappear { stopWatching() }
         .sheet(isPresented: $showSignIn) {
@@ -218,9 +219,11 @@ struct FriendLobbySheet: View {
             .controlSize(.large)
 
             Button {
+                container.sync.track("friend_contacts_opened")
                 ContactInviter.shared.pickPhone { name, phone in
+                    container.sync.track("friend_contact_picked")
                     invitedName = name
-                    ContactInviter.shared.sendText(to: phone, body: FriendInvite.message(for: game))
+                    textInvite(to: phone, state: game)
                 }
             } label: {
                 Label("Text someone from Contacts", systemImage: "person.crop.circle.badge.plus")
@@ -243,12 +246,21 @@ struct FriendLobbySheet: View {
     /// create the invite and open Messages addressed to them.
     private func inviteFromContacts() {
         guard container.sync.isSignedIn else { showSignIn = true; return }
+        container.sync.track("friend_contacts_opened")
         ContactInviter.shared.pickPhone { name, phone in
+            container.sync.track("friend_contact_picked")
             Task {
                 guard let state = await create(source: "contacts") else { return }
                 invitedName = name
-                ContactInviter.shared.sendText(to: phone, body: FriendInvite.message(for: state))
+                textInvite(to: phone, state: state)
             }
+        }
+    }
+
+    private func textInvite(to phone: String, state: FriendGameState) {
+        let sync = container.sync
+        ContactInviter.shared.sendText(to: phone, body: FriendInvite.message(for: state)) { result in
+            sync.track("friend_text_sent", ["result": result])
         }
     }
 

@@ -386,8 +386,16 @@ struct HomeScreen: View {
     private func refreshFriendState() async {
         guard container.sync.isSignedIn else { return }
         openFriendGames = await container.sync.openFriendGames()
-        rewards = await container.sync.unredeemedReferralRewards()
+        let fresh = await container.sync.unredeemedReferralRewards()
+        for reward in fresh where !rewards.contains(reward) {
+            container.sync.track("referral_reward_shown", ["role": reward.role])
+        }
+        rewards = fresh
         await retireRedeemedRewards()
+        // GA user property: how many people this player has played.
+        if container.sync.userProperties["friends"] == nil {
+            container.sync.userProperties["friends"] = String(await container.sync.recentFriends().count)
+        }
     }
 
     private func friendGameCard(_ game: FriendGameState) -> some View {
@@ -438,6 +446,7 @@ struct HomeScreen: View {
         guard container.entitlements.redeemedOfferCode, !rewards.isEmpty else { return }
         for reward in rewards {
             await container.sync.markReferralRedeemed(code: reward.code)
+            container.sync.track("referral_redeemed", ["role": reward.role])
         }
         rewards = []
     }

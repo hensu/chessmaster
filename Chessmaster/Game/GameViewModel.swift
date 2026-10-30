@@ -187,6 +187,7 @@ final class GameViewModel {
             if let friend { applyFriendState(friend.state) }
             startLowTimeWatcher()
             container?.sync.track("game_start", analyticsGameProps)
+            if isFriendGame { container?.sync.track("friend_game_started", analyticsGameProps) }
             startPrefetch()
         case .movePlayed(let move):
             clock?.press(move.mover.clockSide)
@@ -244,6 +245,7 @@ final class GameViewModel {
                 props["moves"] = String(session.moveHistory.count)
                 props["duration_s"] = String(Int(Date.now.timeIntervalSince(startedAt)))
                 container?.sync.track("game_finished", props)
+                if isFriendGame { container?.sync.track("friend_game_finished", props) }
                 if let games = try? container?.games.recentGames() {
                     StreakNotifier.refresh(games: games)
                     // Chess.com-style: ask for loud notifications at a high-intent
