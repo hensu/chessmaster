@@ -268,6 +268,8 @@ struct FriendLobbySheet: View {
         busy = true
         errorMessage = nil
         defer { busy = false }
+        // "Sam joined your game" arrives as a push when you're not in the app.
+        await NotificationPermission.requestFullIfNeeded()
         let color = colorChoice == "random" ? (Bool.random() ? "white" : "black") : colorChoice
         do {
             let state = try await container.sync.createFriendGame(

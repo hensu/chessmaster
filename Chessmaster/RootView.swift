@@ -48,6 +48,8 @@ struct RootView: View {
         container.pendingInviteCode = nil
         inviteSignIn = false
         Task {
+            // Friend games tell you when it's time to play (pushes).
+            await NotificationPermission.requestFullIfNeeded()
             do {
                 let state = try await container.sync.joinFriendGame(code: code)
                 container.sync.track("friend_invite_opened", ["status": state.status])
@@ -121,7 +123,10 @@ struct RootView: View {
             // Route notification taps, and (re)arm re-engagement nudges — a
             // launch means the user is back, so the cascade resets from now.
             if notifications == nil {
-                notifications = NotificationCoordinator(router: router, sync: container.sync)
+                notifications = NotificationCoordinator(
+                    router: router, sync: container.sync,
+                    onFriendGame: { code in container.pendingInviteCode = code },
+                    activeFriendCode: { container.activeFriendGame?.state.code })
             }
             // Forward the APNs token to the backend, and register signed-in
             // users so the server re-engagement push can reach them.

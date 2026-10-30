@@ -25,7 +25,7 @@ final class DependencyContainer {
     var activeFriendGame: FriendGameLink?
 
     func startFriendGame(_ state: FriendGameState) {
-        guard let me = sync.userID else { return }
+        guard let me = sync.userID, activeFriendGame?.state.id != state.id else { return }
         activeFriendGame = FriendGameLink(state: state, myID: me, sync: sync)
     }
 
