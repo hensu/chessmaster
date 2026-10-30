@@ -422,9 +422,7 @@ struct HomeScreen: View {
                 VStack(alignment: .leading, spacing: 2) {
                     Text("You earned a free month of Diamond")
                         .font(.headline)
-                    Text(reward.role == "inviter"
-                         ? "Thanks for inviting a friend! Tap to redeem."
-                         : "Welcome gift for joining a friend's game. Tap to redeem.")
+                    Text("For playing a friend. Tap to redeem.")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }

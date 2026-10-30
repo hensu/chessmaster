@@ -53,6 +53,7 @@
 		8C00973F7EFB38233D02E77E /* AnalysisScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29572AC62202C5EAC45ACF65 /* AnalysisScreen.swift */; };
 		8D0A96691EA0354428810614 /* OnboardingPaywall.swift in Sources */ = {isa = PBXBuildFile; fileRef = 590A590FE53E9390D1813D61 /* OnboardingPaywall.swift */; };
 		929601FF0D1B9C267B9C8640 /* lessons.json in Resources */ = {isa = PBXBuildFile; fileRef = C1DC7A22A63B382A44D1D1CD /* lessons.json */; };
+		95CA07E644A861B921288006 /* ContactInviter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 388A7AA981CDE0A60D6321DB /* ContactInviter.swift */; };
 		98487A226A62E1DF80413663 /* nn-c288c895ea92.nnue in Resources */ = {isa = PBXBuildFile; fileRef = 19FDD251C700D104CDBA1634 /* nn-c288c895ea92.nnue */; };
 		9CAA81372003265F8CFB0F83 /* ClockTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F6658F822F21189C7130E7C3 /* ClockTests.swift */; };
 		A79D9B1B39BD0F3369C6D22F /* AppRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6D1C930946C93603609BFCB2 /* AppRouter.swift */; };
@@ -124,6 +125,7 @@
 		32338B9CDEF92C6560367E7B /* Chessmaster.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Chessmaster.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3353EE908401E16FAD9D2F29 /* AnalysisPrefetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisPrefetcher.swift; sourceTree = "<group>"; };
 		371470DFAB25702427DE592A /* CoachNudgeNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachNudgeNotifier.swift; sourceTree = "<group>"; };
+		388A7AA981CDE0A60D6321DB /* ContactInviter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContactInviter.swift; sourceTree = "<group>"; };
 		3E9C1AB0E8619BEF579ED557 /* AnalysisKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = AnalysisKit; path = Packages/AnalysisKit; sourceTree = SOURCE_ROOT; };
 		41D121DD055D51BACB66F9F9 /* PersistenceKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = PersistenceKit; path = Packages/PersistenceKit; sourceTree = SOURCE_ROOT; };
 		4A63FC7E699AF543CC54016D /* nn-37f18f62d772.nnue */ = {isa = PBXFileReference; path = "nn-37f18f62d772.nnue"; sourceTree = "<group>"; };
@@ -440,6 +442,7 @@
 			children = (
 				3353EE908401E16FAD9D2F29 /* AnalysisPrefetcher.swift */,
 				080C07EF6CA7F8DF1BA86BA4 /* ClockView.swift */,
+				388A7AA981CDE0A60D6321DB /* ContactInviter.swift */,
 				50FAEB7669FBE7B15EB85A56 /* EngineOpponent.swift */,
 				A6F44CC373650579EBF9A9E8 /* FriendGame.swift */,
 				006E9ADA5EF28EF427D5DD88 /* FriendLobbySheet.swift */,
@@ -591,6 +594,7 @@
 				32B18AF5EBC1A4960BD85030 /* CoachingGenerator.swift in Sources */,
 				7D35B47D369CA70425DA082E /* CoachingModels.swift in Sources */,
 				02E7556C1C02D2B31025DCC2 /* CoachingReportView.swift in Sources */,
+				95CA07E644A861B921288006 /* ContactInviter.swift in Sources */,
 				B1AFA194E3FE9DAF35E10C0A /* DependencyContainer.swift in Sources */,
 				28BF18AF731C5DE8FC05D43B /* EngineOpponent.swift in Sources */,
 				49E67BFCAF9CE136B938D7AB /* FriendGame.swift in Sources */,
@@ -693,7 +697,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 55;
+				CURRENT_PROJECT_VERSION = 56;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = BD3U76LB98;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
@@ -799,7 +803,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 55;
+				CURRENT_PROJECT_VERSION = 56;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = BD3U76LB98;
 				ENABLE_NS_ASSERTIONS = NO;

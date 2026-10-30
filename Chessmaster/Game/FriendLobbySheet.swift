@@ -21,6 +21,8 @@ struct FriendLobbySheet: View {
     @State private var watchTask: Task<Void, Never>?
     @State private var pollTask: Task<Void, Never>?
     @State private var showSignIn = false
+    /// Who the invite was texted to (Contacts), for the waiting screen.
+    @State private var invitedName: String?
 
     private static let choices: [TimeControl] = [
         TimeControl(minutes: 3, incrementSeconds: 2),
@@ -97,11 +99,11 @@ struct FriendLobbySheet: View {
             .pickerStyle(.segmented)
 
             Button {
-                create()
+                inviteFromContacts()
             } label: {
                 HStack {
                     if busy { ProgressView().tint(.white) }
-                    Label("Create invite link", systemImage: "message.fill")
+                    Label("Invite from Contacts", systemImage: "person.crop.circle.badge.plus")
                 }
                 .font(.headline)
                 .frame(maxWidth: .infinity)
@@ -109,6 +111,18 @@ struct FriendLobbySheet: View {
             }
             .buttonStyle(.borderedProminent)
             .tint(.green)
+            .controlSize(.large)
+            .disabled(busy)
+            .accessibilityIdentifier("inviteFromContacts")
+
+            Button {
+                Task { _ = await create() }
+            } label: {
+                Label("Share invite link instead", systemImage: "square.and.arrow.up")
+                    .font(.subheadline.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
             .controlSize(.large)
             .disabled(busy)
 
@@ -138,8 +152,9 @@ struct FriendLobbySheet: View {
     private func waiting(_ game: FriendGameState) -> some View {
         VStack(spacing: 18) {
             ProgressView().controlSize(.large).padding(.top, 24)
-            Text("Waiting for your friend…")
+            Text(invitedName.map { "Waiting for \($0)…" } ?? "Waiting for your friend…")
                 .font(.title3.bold())
+                .multilineTextAlignment(.center)
             Text("The game starts as soon as they open the link. Keep this screen open.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
@@ -162,7 +177,20 @@ struct FriendLobbySheet: View {
             .tint(.green)
             .controlSize(.large)
 
-            Text("🎁 If they're new to Chess AI and you finish a game, you both get a free month of Diamond.")
+            Button {
+                ContactInviter.shared.pickPhone { name, phone in
+                    invitedName = name
+                    ContactInviter.shared.sendText(to: phone, body: FriendInvite.message(for: game))
+                }
+            } label: {
+                Label("Text someone from Contacts", systemImage: "person.crop.circle.badge.plus")
+                    .font(.subheadline.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+
+            Text("🎁 Finish a game together and you each get a free month of Diamond.")
                 .font(.footnote)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -171,26 +199,41 @@ struct FriendLobbySheet: View {
 
     // MARK: - Actions
 
-    private func create() {
+    /// Pick a contact first (no game is created if they cancel), then
+    /// create the invite and open Messages addressed to them.
+    private func inviteFromContacts() {
         guard container.sync.isSignedIn else { showSignIn = true; return }
-        busy = true
-        errorMessage = nil
-        let color = colorChoice == "random" ? (Bool.random() ? "white" : "black") : colorChoice
-        Task {
-            defer { busy = false }
-            do {
-                let state = try await container.sync.createFriendGame(
-                    initialSeconds: Int(timeControl.initial.components.seconds),
-                    incrementSeconds: Int(timeControl.increment.components.seconds),
-                    hostColor: color)
-                container.sync.track("friend_invite_created", ["time_control": timeControl.label])
-                waitFor(state)
-            } catch let error as FriendGameError {
-                errorMessage = error.message
-            } catch {
-                errorMessage = FriendGameError.other("").message
+        ContactInviter.shared.pickPhone { name, phone in
+            Task {
+                guard let state = await create(source: "contacts") else { return }
+                invitedName = name
+                ContactInviter.shared.sendText(to: phone, body: FriendInvite.message(for: state))
             }
         }
+    }
+
+    @discardableResult
+    private func create(source: String = "share") async -> FriendGameState? {
+        guard container.sync.isSignedIn else { showSignIn = true; return nil }
+        busy = true
+        errorMessage = nil
+        defer { busy = false }
+        let color = colorChoice == "random" ? (Bool.random() ? "white" : "black") : colorChoice
+        do {
+            let state = try await container.sync.createFriendGame(
+                initialSeconds: Int(timeControl.initial.components.seconds),
+                incrementSeconds: Int(timeControl.increment.components.seconds),
+                hostColor: color)
+            container.sync.track("friend_invite_created",
+                                 ["time_control": timeControl.label, "source": source])
+            waitFor(state)
+            return state
+        } catch let error as FriendGameError {
+            errorMessage = error.message
+        } catch {
+            errorMessage = FriendGameError.other("").message
+        }
+        return nil
     }
 
     private func waitFor(_ state: FriendGameState) {
