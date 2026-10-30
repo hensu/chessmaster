@@ -119,7 +119,7 @@ public final class GameSession {
     public func isUserControlled(_ color: Piece.Color) -> Bool {
         switch config.opponent {
         case .humanLocal: true
-        case .engine: color == config.playerColor
+        case .engine, .friend: color == config.playerColor
         }
     }
 

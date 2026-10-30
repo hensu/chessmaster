@@ -6,6 +6,8 @@ import SupabaseSync
 /// Signed-in players get every finished game saved to their account.
 struct AccountSheet: View {
     let sync: SyncService
+    /// Optional line under the title (e.g. why sign-in is needed right now).
+    var subtitle: String? = nil
     @Environment(\.dismiss) private var dismiss
 
     @State private var email = ""
@@ -37,6 +39,15 @@ struct AccountSheet: View {
                     .frame(width: 64, height: 3)
                     .clipShape(Capsule())
                     .padding(.top, 8)
+
+                if let subtitle {
+                    Text(subtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 24)
+                        .padding(.top, 12)
+                }
 
                 // Email + password / code
                 VStack(spacing: 12) {

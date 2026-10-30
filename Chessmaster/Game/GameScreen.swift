@@ -22,6 +22,10 @@ struct GameScreen: View {
         }())
     }
 
+    init(friend link: FriendGameLink) {
+        _model = State(initialValue: GameViewModel(config: link.config, friend: link))
+    }
+
     init(resume record: InProgressGameRecord) {
         let config = GameConfig(record: record) ?? GameConfig()
         _model = State(initialValue: GameViewModel(config: config, resume: record))
@@ -200,7 +204,8 @@ struct GameScreen: View {
     @ViewBuilder
     private func playerBar(for color: Piece.Color) -> some View {
         HStack {
-            Image(systemName: model.session.isUserControlled(color) ? "person.fill" : "desktopcomputer")
+            Image(systemName: model.session.isUserControlled(color) || model.isFriendGame
+                  ? "person.fill" : "desktopcomputer")
                 .foregroundStyle(.secondary)
             Text(model.playerName(for: color))
                 .fontWeight(.semibold)
@@ -319,14 +324,16 @@ struct GameOverSheet: View {
                 }
                 .buttonStyle(.bordered)
 
-                Button {
-                    container.sync.track("rematch_tapped")
-                    dismissSheet()
-                    model.rematchRequested = true
-                } label: {
-                    Text("Rematch").frame(maxWidth: .infinity)
+                if !model.isFriendGame {
+                    Button {
+                        container.sync.track("rematch_tapped")
+                        dismissSheet()
+                        model.rematchRequested = true
+                    } label: {
+                        Text("Rematch").frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
                 }
-                .buttonStyle(.bordered)
             }
             .padding(.horizontal)
 

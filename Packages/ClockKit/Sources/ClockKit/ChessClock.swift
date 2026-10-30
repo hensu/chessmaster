@@ -70,6 +70,19 @@ public final class ChessClock {
         scheduleFlagCheck(for: side.opposite)
     }
 
+    /// Overwrites both sides' banked time with an authoritative reading
+    /// (friend games: the server owns the clocks). The running side has
+    /// already been thinking for `runningElapsed`.
+    public func sync(white: Duration, black: Duration, runningElapsed: Duration = .zero) {
+        guard !isStopped else { return }
+        flagTask?.cancel()
+        stored = [.white: white, .black: black]
+        if let running {
+            stampedAt = .now - runningElapsed
+            scheduleFlagCheck(for: running)
+        }
+    }
+
     /// Permanently stops the clock (game over).
     public func stop() {
         guard !isStopped else { return }
@@ -83,7 +96,7 @@ public final class ChessClock {
     }
 
     private func scheduleFlagCheck(for side: ClockSide) {
-        let deadline = ContinuousClock.now + stored[side]!
+        let deadline = (stampedAt ?? .now) + stored[side]!
         flagTask = Task { [weak self] in
             try? await Task.sleep(until: deadline, clock: .continuous)
             guard !Task.isCancelled, let self else { return }

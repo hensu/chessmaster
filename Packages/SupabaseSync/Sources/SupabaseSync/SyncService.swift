@@ -49,7 +49,7 @@ public final class SyncService {
     /// not "signed out", so prompting would be wrong.
     public private(set) var sessionRestored = false
 
-    private let client: SupabaseClient?
+    let client: SupabaseClient?
     private let games: GameRepository
     private let ratingHistory: RatingHistoryRepository
 

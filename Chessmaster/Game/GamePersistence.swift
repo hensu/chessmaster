@@ -34,6 +34,7 @@ extension GameConfig {
         switch opponent {
         case .engine: "engine"
         case .humanLocal: "humanLocal"
+        case .friend: "friend"
         }
     }
 

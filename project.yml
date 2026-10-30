@@ -108,6 +108,9 @@ targets:
         # Push (re-engagement). Substituted per-config at build time from
         # APS_ENVIRONMENT: sandbox for Debug, production for Release.
         aps-environment: $(APS_ENVIRONMENT)
+        # Friend-game invite links (getchessai.com/play/?g=CODE); the site
+        # serves .well-known/apple-app-site-association.
+        com.apple.developer.associated-domains: ["applinks:getchessai.com"]
     info:
       path: Chessmaster/Info.plist
       properties:

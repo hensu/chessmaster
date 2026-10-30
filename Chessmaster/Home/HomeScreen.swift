@@ -6,6 +6,7 @@ import ChessKit
 import EngineKit
 import PersistenceKit
 import RatingKit
+import SupabaseSync
 
 /// Lichess-style quick pairing: a grid of time-control tiles. Tapping a
 /// tile starts a game against Stockfish immediately — no opponent picker.
@@ -34,6 +35,12 @@ struct HomeScreen: View {
     @State private var autoCoachAccepted = false
     @State private var autoCoachGame: GameRecord?
     @State private var isVisible = false
+    /// Friend games: the invite sheet, games still open on the server, and
+    /// free months earned by inviting (App Store offer codes).
+    @State private var showFriendLobby = false
+    @State private var openFriendGames: [FriendGameState] = []
+    @State private var waitingInvite: FriendGameState?
+    @State private var rewards: [ReferralReward] = []
     @Environment(DependencyContainer.self) private var container
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 3)
@@ -71,6 +78,14 @@ struct HomeScreen: View {
                     .buttonStyle(.plain)
                 }
 
+                ForEach(rewards) { reward in
+                    rewardCard(reward)
+                }
+
+                ForEach(openFriendGames) { game in
+                    friendGameCard(game)
+                }
+
                 ratingsRow
 
                 if streaks.playDays >= 2 || streaks.wins >= 2 {
@@ -97,6 +112,32 @@ struct HomeScreen: View {
                         showCustom = true
                     }
                 }
+
+                Button {
+                    container.sync.track("friend_lobby_opened")
+                    showFriendLobby = true
+                } label: {
+                    HStack(spacing: 12) {
+                        Image(systemName: "person.2.fill")
+                            .font(.title3)
+                            .foregroundStyle(.green)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Play a Friend").font(.headline)
+                            Text("Send a link by text · live game")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .font(.footnote.weight(.semibold))
+                            .foregroundStyle(.tertiary)
+                    }
+                    .padding()
+                    .background(Color(.secondarySystemGroupedBackground),
+                                in: RoundedRectangle(cornerRadius: 12))
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("playFriend")
 
                 gameOptionsBar
             }
@@ -165,6 +206,17 @@ struct HomeScreen: View {
             evaluateAutoCoach()
         }
         .onDisappear { isVisible = false }
+        .task(id: container.activeFriendGame == nil && !showFriendLobby) {
+            await refreshFriendState()
+        }
+        .sheet(isPresented: $showFriendLobby) {
+            FriendLobbySheet()
+                .environment(container)
+        }
+        .sheet(item: $waitingInvite) { game in
+            FriendLobbySheet(initial: game)
+                .environment(container)
+        }
         // The nudge waits for the session restore to settle; when it does,
         // re-check (onAppear may have run while auth was still unknown).
         .onChange(of: container.sync.sessionRestored) { _, _ in
@@ -316,6 +368,68 @@ struct HomeScreen: View {
                 .foregroundStyle(.tertiary)
         }
         .padding(.top, 2)
+    }
+
+    // MARK: - Friends
+
+    private func refreshFriendState() async {
+        guard container.sync.isSignedIn else { return }
+        openFriendGames = await container.sync.openFriendGames()
+        rewards = await container.sync.unredeemedReferralRewards()
+    }
+
+    private func friendGameCard(_ game: FriendGameState) -> some View {
+        let me = container.sync.userID ?? game.hostID
+        let waiting = game.status == "waiting"
+        return Button {
+            if waiting {
+                waitingInvite = game
+            } else {
+                container.startFriendGame(game)
+            }
+        } label: {
+            HStack {
+                Label(waiting ? "Invite waiting · \(game.code)" : "Your game vs \(game.opponentName(for: me))",
+                      systemImage: waiting ? "hourglass" : "person.2.fill")
+                    .font(.headline)
+                Spacer()
+                Text(waiting ? "Open" : "Resume")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(.green)
+            }
+            .padding()
+            .background(Color(.secondarySystemGroupedBackground),
+                        in: RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func rewardCard(_ reward: ReferralReward) -> some View {
+        Button {
+            container.sync.track("referral_redeem_tapped", ["role": reward.role])
+            UIApplication.shared.open(reward.redeemURL(appID: "6790178402"))
+            Task {
+                await container.sync.markReferralRedeemed(code: reward.code)
+                rewards.removeAll { $0.code == reward.code }
+            }
+        } label: {
+            HStack(spacing: 12) {
+                Text("🎁").font(.title2)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("You earned a free month of Diamond")
+                        .font(.headline)
+                    Text(reward.role == "inviter"
+                         ? "Thanks for inviting a friend! Tap to redeem."
+                         : "Welcome gift for joining a friend's game. Tap to redeem.")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
+                Spacer()
+            }
+            .padding()
+            .background(Color.green.opacity(0.15), in: RoundedRectangle(cornerRadius: 12))
+        }
+        .buttonStyle(.plain)
     }
 
     private func optionChip(icon: String, label: String) -> some View {

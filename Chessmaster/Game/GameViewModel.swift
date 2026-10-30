@@ -8,6 +8,7 @@ import AnalysisKit
 import EngineKit
 import RatingKit
 import PersistenceKit
+import SupabaseSync
 
 @Observable @MainActor
 final class GameViewModel {
@@ -40,6 +41,11 @@ final class GameViewModel {
     /// Warms the eval cache during play so post-game analysis opens fast.
     private var prefetcher: AnalysisPrefetcher?
     private let gameID = UUID().uuidString
+    /// Live friend game: the server link (moves, clocks, endings).
+    let friend: FriendGameLink?
+    /// The ending came from the server (friend resigned / flagged / aborted),
+    /// so there's nothing to report back.
+    private var endedByServer = false
     private let startedAt = Date.now
     /// How this game began, for analytics: fresh start, resumed save, or
     /// mistake-retry training.
@@ -48,15 +54,20 @@ final class GameViewModel {
     private var audio: ChessAudioPlayer? { container?.audio }
 
     /// Pass `resume` to continue a previously saved in-progress game.
-    init(config: GameConfig, resume: InProgressGameRecord? = nil) {
+    init(config: GameConfig, resume: InProgressGameRecord? = nil, friend: FriendGameLink? = nil) {
         let session = GameSession(config: config)
         self.session = session
+        self.friend = friend
         self.orientation = config.playerColor
-        self.startSource = resume != nil ? "resume"
+        self.startSource = friend != nil ? "friend" : resume != nil ? "resume"
             : config.startFEN != nil ? "training" : "new"
 
         if let resume, !resume.movesUCI.isEmpty {
             session.replay(movesUCI: resume.movesUCI.split(separator: " ").map(String.init))
+        }
+        // Rejoining a friend game already under way.
+        if let friend, !friend.state.moves.isEmpty {
+            session.replay(movesUCI: friend.state.moves)
         }
 
         if let tc = config.timeControl {
@@ -68,8 +79,13 @@ final class GameViewModel {
             session.clockSnapshot = { [weak clock] color in
                 clock?.remaining(color.clockSide)
             }
-            clock.onFlag = { [weak session] side in
-                session?.flag(side == .white ? .white : .black)
+            clock.onFlag = { [weak session, weak friend] side in
+                if let friend {
+                    // The server's clock decides; its verdict ends the game.
+                    Task { await friend.claimTimeout() }
+                } else {
+                    session?.flag(side == .white ? .white : .black)
+                }
             }
         } else {
             self.clock = nil
@@ -81,6 +97,48 @@ final class GameViewModel {
                 blunderProbability: config.engineBlunderProbability
             )
         }
+        if let friend {
+            session.opponentProvider = FriendOpponent(link: friend)
+        }
+    }
+
+    var isFriendGame: Bool { friend != nil }
+
+    /// Fresh server state for a friend game: adopt its clocks, and end the
+    /// game here if it ended there (resignation, timeout, abort).
+    private func applyFriendState(_ state: FriendGameState) {
+        guard session.status.isPlaying else { return }
+        if state.isOver, let result = state.domainResult {
+            endedByServer = true
+            switch result {
+            case .win(let winner, .resignation): session.resign(winner.opposite)
+            case .win(let winner, .timeout): session.flag(winner.opposite)
+            case .aborted: session.abort()
+            default: break   // mate/draws: the board reaches them itself
+            }
+            if session.status.isPlaying { endedByServer = false }
+            return
+        }
+        guard let clock, state.moves.count == session.moveHistory.count else { return }
+        if state.moves.count >= 2, clock.running == nil {
+            clock.start(session.sideToMove.clockSide)
+        }
+        clock.sync(
+            white: .milliseconds(state.whiteMs),
+            black: .milliseconds(state.blackMs),
+            runningElapsed: .milliseconds(state.turnElapsedMs))
+    }
+
+    /// Reports a local ending (resign, mate, draw, abort) to the server.
+    private func reportFriendEnd(_ result: GameResult) {
+        guard let friend, !endedByServer else { return }
+        let termination: String
+        switch result {
+        case .aborted: termination = "aborted"
+        case .win(_, .timeout): return   // claimed via the clock
+        default: termination = result.terminationString ?? "agreement"
+        }
+        Task { await friend.end(termination: termination) }
     }
 
     func attach(container: DependencyContainer) {
@@ -96,11 +154,16 @@ final class GameViewModel {
                 self.handle(event)
             }
         }
+        if let friend {
+            friend.onState = { [weak self] state in self?.applyFriendState(state) }
+            friend.start()
+        }
         session.start()
 
         // Lichess-style abort: a game nobody starts playing shouldn't count.
-        // Training replays are exempt (thinking there is the whole point).
-        if !isTraining {
+        // Training replays are exempt (thinking there is the whole point),
+        // and friend games have an Abort button instead.
+        if !isTraining && !isFriendGame {
             firstMoveAbortTask = Task { @MainActor [weak self] in
                 try? await Task.sleep(for: .seconds(20))
                 guard let self, self.session.status.isPlaying else { return }
@@ -116,12 +179,25 @@ final class GameViewModel {
         switch event {
         case .gameStarted:
             audio?.play(.gameStart)
-            clock?.start(session.sideToMove.clockSide)
+            // Friend games: each side's first move is free (server rule);
+            // the clock starts once both have moved.
+            if !isFriendGame || session.moveHistory.count >= 2 {
+                clock?.start(session.sideToMove.clockSide)
+            }
+            if let friend { applyFriendState(friend.state) }
             startLowTimeWatcher()
             container?.sync.track("game_start", analyticsGameProps)
             startPrefetch()
         case .movePlayed(let move):
             clock?.press(move.mover.clockSide)
+            if let friend {
+                if session.moveHistory.count == 2 { clock?.start(session.sideToMove.clockSide) }
+                if session.isUserControlled(move.mover) {
+                    Task { await friend.send(ply: move.ply, uci: move.uci) }
+                } else {
+                    applyFriendState(friend.state)
+                }
+            }
             audio?.play(soundEffect(for: move))
             if move.isCapture || move.givesCheck {
                 UIImpactFeedbackGenerator(style: move.givesCheck ? .heavy : .medium)
@@ -141,7 +217,12 @@ final class GameViewModel {
             lowTimeTask?.cancel()
             firstMoveAbortTask?.cancel()
             audio?.play(.gameEnd)
-            try? container?.inProgress.clear()
+            if isFriendGame {
+                reportFriendEnd(result)
+                friend?.stop()
+            } else {
+                try? container?.inProgress.clear()
+            }
             if result != .aborted {
                 applyRating(for: result)
                 saveFinishedGame(result: result)
@@ -187,7 +268,9 @@ final class GameViewModel {
     }
 
     private func saveInProgressSnapshot() {
-        guard session.status.isPlaying, let container else { return }
+        // Friend games live on the server; a local snapshot would resume
+        // them as a hot-seat game.
+        guard session.status.isPlaying, !isFriendGame, let container else { return }
         try? container.inProgress.save(makeInProgressRecord(session: session, clock: clock))
     }
 
@@ -327,7 +410,8 @@ final class GameViewModel {
 
     var title: String {
         if let tc = session.config.timeControl {
-            return "\(tc.label) \(tc.category.rawValue.capitalized)"
+            return isFriendGame ? "\(tc.label) vs \(friend?.opponentName ?? "Friend")"
+                : "\(tc.label) \(tc.category.rawValue.capitalized)"
         }
         return "Casual"
     }
@@ -340,6 +424,8 @@ final class GameViewModel {
             return session.isUserControlled(color)
                 ? "You"
                 : "Level \(level) · \(StrengthLevel.level(level).displayName)"
+        case .friend:
+            return session.isUserControlled(color) ? "You" : (friend?.opponentName ?? "Friend")
         }
     }
 
@@ -389,7 +475,8 @@ final class GameViewModel {
             "level": config.engineLevelValue.map(String.init) ?? "human",
             "level_mode": UserDefaults.standard.string(forKey: "play.levelMode") ?? "auto",
             "color": config.playerColor == .black ? "black" : "white",
-            "rated": config.startFEN == nil && config.opponent != .humanLocal ? "true" : "false",
+            "rated": config.engineLevelValue != nil && config.startFEN == nil ? "true" : "false",
+            "opponent": config.opponentTypeString,
             "training": isTraining ? "true" : "false",
         ]
     }
@@ -421,7 +508,13 @@ final class GameViewModel {
     var encouragement: String {
         let headline = resultHeadline
         let pool: [String]
-        if headline.contains("won") || headline.contains("passed") {
+        if isFriendGame {
+            pool = headline.contains("won")
+                ? ["Bragging rights are yours. 🏆", "Great game — send a rematch invite!"]
+                : headline.contains("lost")
+                    ? ["Good fight. Review it and get your revenge.", "Close one — run it back!"]
+                    : ["Evenly matched — a rematch decides it."]
+        } else if headline.contains("won") || headline.contains("passed") {
             pool = [
                 "Beautiful chess — you outplayed the AI. 👏",
                 "Clean win. Your training is paying off.",

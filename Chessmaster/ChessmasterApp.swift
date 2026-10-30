@@ -24,7 +24,16 @@ struct ChessmasterApp: App {
                 .environment(container)
                 .environment(container.learnProgress)
                 .onOpenURL { url in
-                    GIDSignIn.sharedInstance.handle(url)
+                    if let code = FriendInvite.code(from: url) {
+                        container.pendingInviteCode = code
+                    } else {
+                        GIDSignIn.sharedInstance.handle(url)
+                    }
+                }
+                .onContinueUserActivity(NSUserActivityTypeBrowsingWeb) { activity in
+                    if let url = activity.webpageURL, let code = FriendInvite.code(from: url) {
+                        container.pendingInviteCode = code
+                    }
                 }
         }
         .onChange(of: scenePhase) { _, phase in

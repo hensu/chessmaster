@@ -18,6 +18,16 @@ final class DependencyContainer {
     let entitlements = EntitlementStore()
     let learnProgress = LearnProgress()
     let coachVoice = CoachVoice()
+    /// Invite code from a link (getchessai.com/play/?g=…), waiting for
+    /// sign-in / join. RootView consumes it.
+    var pendingInviteCode: String?
+    /// The friend game on screen (RootView presents it full-screen).
+    var activeFriendGame: FriendGameLink?
+
+    func startFriendGame(_ state: FriendGameState) {
+        guard let me = sync.userID else { return }
+        activeFriendGame = FriendGameLink(state: state, myID: me, sync: sync)
+    }
 
     init() {
         let url = URL.applicationSupportDirectory

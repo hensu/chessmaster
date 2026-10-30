@@ -67,7 +67,7 @@ struct GameHistoryRow: View {
     private var opponentLabel: String {
         game.opponentType == "engine"
             ? "Level \(game.engineLevel ?? 1) · \(StrengthLevel.level(game.engineLevel ?? 1).displayName)"
-            : "Two players"
+            : game.opponentType == "friend" ? "Friend" : "Two players"
     }
 
     private var timeControlLabel: String {

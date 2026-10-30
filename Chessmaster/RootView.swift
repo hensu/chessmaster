@@ -1,6 +1,7 @@
 // Chessmaster — GPL-3.0-or-later
 import SwiftUI
 import PaywallKit
+import SupabaseSync
 
 struct RootView: View {
     @State private var router = AppRouter()
@@ -16,6 +17,10 @@ struct RootView: View {
     @State private var onboarded = UserDefaults.standard.bool(forKey: "onboarding.quizDone")
     /// Handles taps on local notifications (attribution + routing).
     @State private var notifications: NotificationCoordinator?
+    /// Invite links: sign-in prompt, the host's own waiting invite, errors.
+    @State private var inviteSignIn = false
+    @State private var lobbyGame: FriendGameState?
+    @State private var inviteError: String?
 
     /// Decide once (when the session restore settles) whether to show the
     /// onboarding cover. After that the cover's lifetime is owned by
@@ -26,7 +31,45 @@ struct RootView: View {
         let args = ProcessInfo.processInfo.arguments
         if args.contains("--uitest") || args.contains(where: { $0.hasPrefix("--autostart") }) { return }
         if args.contains("--reset-welcome") { welcomePresented = true; return }
+        // Arrived through a friend's invite: straight to the game, no quiz.
+        if container.pendingInviteCode != nil { return }
         welcomePresented = !onboarded && !container.sync.isSignedIn && container.sync.isConfigured
+    }
+
+    /// Joins the game behind an invite link once the session is known;
+    /// asks for sign-in first when needed.
+    private func handleInvite() {
+        guard let code = container.pendingInviteCode, container.sync.sessionRestored else { return }
+        guard container.sync.isSignedIn else {
+            welcomePresented = false
+            inviteSignIn = true
+            return
+        }
+        container.pendingInviteCode = nil
+        inviteSignIn = false
+        Task {
+            do {
+                let state = try await container.sync.joinFriendGame(code: code)
+                container.sync.track("friend_invite_opened", ["status": state.status])
+                if state.status == "active" {
+                    container.startFriendGame(state)
+                } else if state.status == "waiting" {
+                    lobbyGame = state          // the host tapped their own link
+                } else {
+                    inviteError = "That game has already ended."
+                }
+            } catch let error as FriendGameError {
+                inviteError = error.message
+            } catch {
+                inviteError = FriendGameError.other("").message
+            }
+        }
+    }
+
+    private var friendGamePresented: Binding<Bool> {
+        Binding(
+            get: { container.activeFriendGame != nil },
+            set: { if !$0 { container.activeFriendGame = nil } })
     }
 
     private var colorScheme: ColorScheme? {
@@ -121,7 +164,11 @@ struct RootView: View {
             }
             decideWelcome()
         }
-        .onChange(of: container.sync.sessionRestored) { _, _ in decideWelcome() }
+        .onChange(of: container.sync.sessionRestored) { _, _ in
+            decideWelcome()
+            handleInvite()
+        }
+        .onChange(of: container.pendingInviteCode) { _, _ in handleInvite() }
         // A purchase made before signing in (or under a previous account)
         // must attach to the account the moment it exists — launch-time
         // reconciliation alone misses sign-ins that happen mid-session.
@@ -131,6 +178,7 @@ struct RootView: View {
         }
         .onChange(of: container.sync.isSignedIn) { _, signedIn in
             guard signedIn else { return }
+            handleInvite()
             Push.registerIfSignedIn(container.sync)   // get a push token for the new session
             Task {
                 await container.entitlements.refresh()
@@ -142,6 +190,30 @@ struct RootView: View {
         .fullScreenCover(isPresented: $welcomePresented) {
             WelcomeScreen { welcomePresented = false }
                 .environment(container)
+        }
+        .fullScreenCover(isPresented: friendGamePresented) {
+            if let link = container.activeFriendGame {
+                NavigationStack {
+                    GameScreen(friend: link)
+                }
+                .environment(container)
+                .environment(container.learnProgress)
+            }
+        }
+        .sheet(isPresented: $inviteSignIn) {
+            AccountSheet(sync: container.sync,
+                         subtitle: "A friend invited you to a game of chess. Sign in to join — it takes one tap.")
+        }
+        .sheet(item: $lobbyGame) { game in
+            FriendLobbySheet(initial: game)
+                .environment(container)
+        }
+        .alert("Couldn't join", isPresented: Binding(
+            get: { inviteError != nil }, set: { if !$0 { inviteError = nil } })
+        ) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text(inviteError ?? "")
         }
         .preferredColorScheme(colorScheme)
     }

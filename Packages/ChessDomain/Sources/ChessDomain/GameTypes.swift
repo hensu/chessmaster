@@ -98,6 +98,9 @@ public struct GameConfig: Sendable, Hashable, Identifiable {
         case humanLocal
         /// Stockfish at a ladder level (1...10).
         case engine(level: Int)
+        /// A friend on another device (live invite game); moves arrive
+        /// through the `opponentProvider`.
+        case friend
     }
 
     public init(
