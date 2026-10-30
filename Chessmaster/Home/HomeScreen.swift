@@ -211,7 +211,11 @@ struct HomeScreen: View {
         }
         .onDisappear { isVisible = false }
         .task(id: container.activeFriendGame == nil && !showFriendLobby) {
-            await refreshFriendState()
+            // Challenges arrive without push yet: re-check while Home is up.
+            while !Task.isCancelled {
+                await refreshFriendState()
+                try? await Task.sleep(for: .seconds(15))
+            }
         }
         .sheet(isPresented: $showFriendLobby) {
             FriendLobbySheet()
@@ -384,28 +388,43 @@ struct HomeScreen: View {
 
     private func friendGameCard(_ game: FriendGameState) -> some View {
         let me = container.sync.userID ?? game.hostID
+        let challenge = game.isChallenge(for: me)
         let waiting = game.status == "waiting"
+        let title = challenge ? "\(game.hostName) challenged you · \(game.timeControlLabel)"
+            : waiting ? "Invite waiting · \(game.code)"
+            : "Your game vs \(game.opponentName(for: me))"
         return Button {
-            if waiting {
+            if challenge {
+                accept(game)
+            } else if waiting {
                 waitingInvite = game
             } else {
                 container.startFriendGame(game)
             }
         } label: {
             HStack {
-                Label(waiting ? "Invite waiting · \(game.code)" : "Your game vs \(game.opponentName(for: me))",
-                      systemImage: waiting ? "hourglass" : "person.2.fill")
+                Label(title, systemImage: challenge ? "flag.checkered" : waiting ? "hourglass" : "person.2.fill")
                     .font(.headline)
                 Spacer()
-                Text(waiting ? "Open" : "Resume")
+                Text(challenge ? "Accept" : waiting ? "Open" : "Resume")
                     .font(.footnote.weight(.semibold))
                     .foregroundStyle(.green)
             }
             .padding()
-            .background(Color(.secondarySystemGroupedBackground),
+            .background(challenge ? Color.green.opacity(0.15) : Color(.secondarySystemGroupedBackground),
                         in: RoundedRectangle(cornerRadius: 12))
         }
         .buttonStyle(.plain)
+    }
+
+    private func accept(_ game: FriendGameState) {
+        container.sync.track("friend_challenge_accepted")
+        Task {
+            if let state = try? await container.sync.joinFriendGame(code: game.code), state.status == "active" {
+                container.startFriendGame(state)
+            }
+            await refreshFriendState()
+        }
     }
 
     private func rewardCard(_ reward: ReferralReward) -> some View {

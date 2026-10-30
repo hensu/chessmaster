@@ -56,9 +56,25 @@ public struct FriendGameState: Decodable, Sendable, Hashable, Identifiable {
         user == hostID ? (guestName ?? "Friend") : hostName
     }
 
+    /// A direct challenge the given user hasn't accepted yet.
+    public func isChallenge(for user: UUID) -> Bool {
+        status == "waiting" && guestID == user
+    }
+
+    public var timeControlLabel: String {
+        "\(initialMs / 60_000)+\(incrementMs / 1000)"
+    }
+
     public var inviteURL: URL {
         URL(string: "https://getchessai.com/play/?g=\(code)")!
     }
+}
+
+/// Someone the user has played before (Play a Friend → "Play again").
+public struct RecentFriend: Decodable, Sendable, Hashable, Identifiable {
+    public let id: UUID
+    public let name: String
+    public let games: Int
 }
 
 /// A free month earned by inviting a friend (App Store one-time offer code).
@@ -113,12 +129,21 @@ extension SyncService {
         }
     }
 
-    public func createFriendGame(initialSeconds: Int, incrementSeconds: Int, hostColor: String) async throws -> FriendGameState {
+    /// `opponent`: challenge someone already played (they accept from Home)
+    /// instead of an open invite link.
+    public func createFriendGame(initialSeconds: Int, incrementSeconds: Int, hostColor: String,
+                                 opponent: UUID? = nil) async throws -> FriendGameState {
         try await rpc("friend_game_create", [
             "p_initial_ms": AnyJSON.integer(initialSeconds * 1000),
             "p_increment_ms": AnyJSON.integer(incrementSeconds * 1000),
             "p_host_color": AnyJSON.string(hostColor),
+            "p_opponent": opponent.map { AnyJSON.string($0.uuidString) } ?? AnyJSON.null,
         ])
+    }
+
+    public func recentFriends() async -> [RecentFriend] {
+        guard let client, isSignedIn else { return [] }
+        return (try? await client.rpc("friend_recent_opponents").execute().value) ?? []
     }
 
     public func joinFriendGame(code: String) async throws -> FriendGameState {

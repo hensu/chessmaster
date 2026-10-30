@@ -23,6 +23,8 @@ struct FriendLobbySheet: View {
     @State private var showSignIn = false
     /// Who the invite was texted to (Contacts), for the waiting screen.
     @State private var invitedName: String?
+    /// People played before: one tap challenges them again.
+    @State private var recent: [RecentFriend] = []
 
     private static let choices: [TimeControl] = [
         TimeControl(minutes: 3, incrementSeconds: 2),
@@ -54,6 +56,9 @@ struct FriendLobbySheet: View {
         .trackScreen("FriendLobby")
         .onAppear {
             if let initial, game == nil { waitFor(initial) }
+        }
+        .task {
+            recent = await container.sync.recentFriends()
         }
         .onDisappear { stopWatching() }
         .sheet(isPresented: $showSignIn) {
@@ -87,6 +92,38 @@ struct FriendLobbySheet: View {
                             .stroke(timeControl == tc ? Color.green : .clear, lineWidth: 2))
                     }
                     .buttonStyle(.plain)
+                }
+            }
+
+            if !recent.isEmpty {
+                Text("Play again").font(.headline)
+                VStack(spacing: 8) {
+                    ForEach(recent) { friend in
+                        Button {
+                            challenge(friend)
+                        } label: {
+                            HStack {
+                                Image(systemName: "person.crop.circle.fill")
+                                    .font(.title2)
+                                    .foregroundStyle(.green)
+                                VStack(alignment: .leading, spacing: 0) {
+                                    Text(friend.name).font(.headline)
+                                    Text(friend.games == 1 ? "1 game" : "\(friend.games) games")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                Spacer()
+                                Text("Challenge")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(.green)
+                            }
+                            .padding(12)
+                            .background(Color(.secondarySystemGroupedBackground),
+                                        in: RoundedRectangle(cornerRadius: 12))
+                        }
+                        .buttonStyle(.plain)
+                        .disabled(busy)
+                    }
                 }
             }
 
@@ -152,10 +189,13 @@ struct FriendLobbySheet: View {
     private func waiting(_ game: FriendGameState) -> some View {
         VStack(spacing: 18) {
             ProgressView().controlSize(.large).padding(.top, 24)
-            Text(invitedName.map { "Waiting for \($0)…" } ?? "Waiting for your friend…")
+            Text(invitedName.map { "Waiting for \($0)…" } ?? game.guestName.map { "Waiting for \($0)…" }
+                 ?? "Waiting for your friend…")
                 .font(.title3.bold())
                 .multilineTextAlignment(.center)
-            Text("The game starts as soon as they open the link. Keep this screen open.")
+            Text(game.guestID != nil
+                 ? "They'll see your challenge on their Home screen. Keep this screen open."
+                 : "The game starts as soon as they open the link. Keep this screen open.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.center)
@@ -212,8 +252,18 @@ struct FriendLobbySheet: View {
         }
     }
 
+    /// Challenge someone already played: no link needed, it appears on
+    /// their Home screen to accept.
+    private func challenge(_ friend: RecentFriend) {
+        Task {
+            if await create(source: "rematch", opponent: friend.id) != nil {
+                invitedName = friend.name
+            }
+        }
+    }
+
     @discardableResult
-    private func create(source: String = "share") async -> FriendGameState? {
+    private func create(source: String = "share", opponent: UUID? = nil) async -> FriendGameState? {
         guard container.sync.isSignedIn else { showSignIn = true; return nil }
         busy = true
         errorMessage = nil
@@ -223,7 +273,8 @@ struct FriendLobbySheet: View {
             let state = try await container.sync.createFriendGame(
                 initialSeconds: Int(timeControl.initial.components.seconds),
                 incrementSeconds: Int(timeControl.increment.components.seconds),
-                hostColor: color)
+                hostColor: color,
+                opponent: opponent)
             container.sync.track("friend_invite_created",
                                  ["time_control": timeControl.label, "source": source])
             waitFor(state)
