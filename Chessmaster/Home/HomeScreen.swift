@@ -201,6 +201,10 @@ struct HomeScreen: View {
             if let config = autoStartConfig, pendingConfig == nil {
                 pendingConfig = config
             }
+            // Screenshots / UI tests: open the Play a Friend sheet directly.
+            if ProcessInfo.processInfo.arguments.contains("--open-friend-lobby") {
+                showFriendLobby = true
+            }
             evaluateSignupNudge()
             isVisible = true
             evaluateAutoCoach()
