@@ -62,7 +62,17 @@ struct AnalysisScreen: View {
                 .padding(.vertical, 8)
             }
             .task {
-                guard scrollToCoaching else { return }
+                // 3 games without the coach: this one's report runs by itself.
+                var scroll = scrollToCoaching
+                if CoachHabit.isDue(model.game.id) {
+                    CoachHabit.clearDue()
+                    model.attach(container: container)
+                    if model.isPremium, model.coachingReport == nil {
+                        model.requestCoaching(automatic: true)
+                        scroll = true
+                    }
+                }
+                guard scroll else { return }
                 try? await Task.sleep(for: .milliseconds(350))   // let the push settle
                 withAnimation { proxy.scrollTo("coaching", anchor: .top) }
             }

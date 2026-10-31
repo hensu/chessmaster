@@ -43,6 +43,9 @@ struct HomeScreen: View {
     @State private var rewards: [ReferralReward] = []
     @Environment(DependencyContainer.self) private var container
 
+    /// Same gold as the AI coach's premium crown.
+    private static let offerGold = Color(red: 0.961, green: 0.769, blue: 0.318)
+
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 10), count: 3)
 
     private var autoStartConfig: GameConfig? {
@@ -121,11 +124,11 @@ struct HomeScreen: View {
                         Image(systemName: "person.2.fill")
                             .font(.title3)
                             .foregroundStyle(.green)
-                        VStack(alignment: .leading, spacing: 2) {
+                        VStack(alignment: .leading, spacing: 3) {
                             Text("Play a Friend").font(.headline)
-                            Text("Send a link by text · live game")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                            Label("Get 1 month of Diamond free", systemImage: "gift.fill")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(Self.offerGold)
                         }
                         Spacer()
                         Image(systemName: "chevron.right")
@@ -133,8 +136,10 @@ struct HomeScreen: View {
                             .foregroundStyle(.tertiary)
                     }
                     .padding()
-                    .background(Color(.secondarySystemGroupedBackground),
+                    .background(Self.offerGold.opacity(0.12),
                                 in: RoundedRectangle(cornerRadius: 12))
+                    .overlay(RoundedRectangle(cornerRadius: 12)
+                        .strokeBorder(Self.offerGold.opacity(0.5), lineWidth: 1))
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("playFriend")
@@ -205,6 +210,10 @@ struct HomeScreen: View {
             if ProcessInfo.processInfo.arguments.contains("--open-friend-lobby") {
                 showFriendLobby = true
             }
+            #if DEBUG
+            if let reward = FriendPreview.reward { rewards = [reward] }
+            if let game = FriendPreview.waitingGame { waitingInvite = game }
+            #endif
             evaluateSignupNudge()
             isVisible = true
             evaluateAutoCoach()
@@ -296,6 +305,16 @@ struct HomeScreen: View {
     /// finished one once Home is visible with nothing else on top.
     private func evaluateAutoCoach() {
         presentAutoCoachIfReady()
+        if container.sync.sessionRestored, !autoCoachRunning, autoCoachPending == nil,
+           let game = CoachHabit.dueGame(container: container) {
+            autoCoachRunning = true
+            Task {
+                autoCoachPending = await CoachHabit.run(for: game, container: container)
+                autoCoachRunning = false
+                presentAutoCoachIfReady()
+            }
+            return
+        }
         guard container.sync.sessionRestored, !autoCoachRunning, autoCoachPending == nil,
               let game = AutoCoach.candidate(
                 games: (try? container.games.recentGames()) ?? [], container: container)
@@ -391,6 +410,9 @@ struct HomeScreen: View {
             container.sync.track("referral_reward_shown", ["role": reward.role])
         }
         rewards = fresh
+        #if DEBUG
+        if let reward = FriendPreview.reward { rewards = [reward] }
+        #endif
         await retireRedeemedRewards()
         // GA user property: how many people this player has played.
         if container.sync.userProperties["friends"] == nil {

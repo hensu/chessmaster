@@ -26,6 +26,8 @@ struct FriendLobbySheet: View {
     /// People played before: one tap challenges them again.
     @State private var recent: [RecentFriend] = []
 
+    private static let offerGold = Color(red: 0.961, green: 0.769, blue: 0.318)
+
     private static let choices: [TimeControl] = [
         TimeControl(minutes: 3, incrementSeconds: 2),
         TimeControl(minutes: 5, incrementSeconds: 0),
@@ -74,6 +76,13 @@ struct FriendLobbySheet: View {
             Text("Send a link by text — your friend taps it and the game starts. Friend games are unrated, and you both get the free game review afterwards.")
                 .font(.subheadline)
                 .foregroundStyle(.secondary)
+
+            Label("Finish a game together and you each get a free month of Diamond.", systemImage: "gift.fill")
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(Self.offerGold)
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Self.offerGold.opacity(0.12), in: RoundedRectangle(cornerRadius: 12))
 
             Text("Time control").font(.headline)
             HStack(spacing: 8) {

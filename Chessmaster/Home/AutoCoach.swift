@@ -90,6 +90,10 @@ struct AutoCoachCard: View {
         return won ? "Win" : "Loss"
     }
 
+    private var opponent: String {
+        ready.game.opponentType == "friend" ? "a friend" : "Level \(ready.game.engineLevel ?? 1)"
+    }
+
     var body: some View {
         VStack(spacing: 16) {
             Image(systemName: "sparkles")
@@ -102,7 +106,7 @@ struct AutoCoachCard: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 24)
 
-            Text("\(outcome) vs Level \(ready.game.engineLevel ?? 1) · \(ready.game.endedAt.formatted(.relative(presentation: .named)))")
+            Text("\(outcome) vs \(opponent) · \(ready.game.endedAt.formatted(.relative(presentation: .named)))")
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(.secondary)
 
@@ -134,5 +138,79 @@ struct AutoCoachCard: View {
         }
         .presentationDetents([.height(440)])
         .presentationDragIndicator(.visible)
+    }
+}
+
+/// Re-engagement for subscribers who stopped using the coach: after 3
+/// finished games in a row without tapping "Get AI Coaching", the next
+/// game's report is generated automatically and shown (post-game analysis
+/// if they open it, else the Home card). Then it's back to the button and
+/// the count starts over. A manual tap resets the count.
+enum CoachHabit {
+    private static let skippedKey = "coachHabit.skipped"
+    private static let dueKey = "coachHabit.dueGame"
+    static let threshold = 3
+    private static let minPlies = 16
+
+    /// Call once per finished game (after it's saved).
+    @MainActor
+    static func gameFinished(_ record: GameRecord, container: DependencyContainer) {
+        guard !ProcessInfo.processInfo.arguments.contains("--uitest"),
+              container.entitlements.isPremium, container.sync.isConfigured,
+              record.termination != "aborted",
+              (GameReplay(pgn: record.pgn)?.plies.count ?? 0) >= minPlies else { return }
+        let defaults = UserDefaults.standard
+        let skipped = defaults.integer(forKey: skippedKey)
+        if skipped >= threshold {
+            defaults.set(record.id, forKey: dueKey)
+            defaults.set(0, forKey: skippedKey)
+            container.sync.track("coach_habit_due", ["plan": container.entitlements.plan.rawValue])
+        } else {
+            defaults.set(skipped + 1, forKey: skippedKey)
+        }
+    }
+
+    /// The player asked for a report themselves.
+    static func coachingRequested() {
+        UserDefaults.standard.set(0, forKey: skippedKey)
+    }
+
+    static func isDue(_ gameID: String) -> Bool {
+        UserDefaults.standard.string(forKey: dueKey) == gameID
+    }
+
+    static func clearDue() {
+        UserDefaults.standard.removeObject(forKey: dueKey)
+    }
+
+    /// The due game if it still has no report (the player closed the game
+    /// without opening its analysis).
+    @MainActor
+    static func dueGame(container: DependencyContainer) -> GameRecord? {
+        guard container.entitlements.isPremium,
+              let id = UserDefaults.standard.string(forKey: dueKey) else { return nil }
+        guard let game = try? container.games.game(id: id), game.coachingJSON == nil else {
+            clearDue()
+            return nil
+        }
+        return game
+    }
+
+    /// Generates the due game's report for the Home card.
+    @MainActor
+    static func run(for game: GameRecord, container: DependencyContainer) async -> AutoCoach.Ready? {
+        clearDue()
+        let plan = container.entitlements.plan.rawValue
+        container.sync.track("auto_coach_started", ["plan": plan, "trigger": "habit"])
+        guard let report = try? await CoachingGenerator.generate(gameID: game.id, sync: container.sync),
+              let data = try? JSONEncoder().encode(report),
+              let json = String(data: data, encoding: .utf8) else {
+            container.sync.track("auto_coach_failed", ["plan": plan, "trigger": "habit"])
+            return nil
+        }
+        try? container.games.updateCoaching(id: game.id, coachingJSON: json)
+        container.sync.track("auto_coach_ready", ["plan": plan, "trigger": "habit"])
+        let updated = (try? container.games.game(id: game.id)) ?? game
+        return AutoCoach.Ready(game: updated, report: report)
     }
 }

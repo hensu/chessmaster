@@ -298,6 +298,7 @@ final class GameViewModel {
         )
         try? container.games.save(record)
         savedGameRecord = record
+        if !isTraining { CoachHabit.gameFinished(record, container: container) }
         // History row references the game row — must come after the save.
         if ratingChange != nil {
             container.ratings.recordHistory(

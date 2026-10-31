@@ -161,6 +161,33 @@ enum FriendInvite {
     static func message(for state: FriendGameState) -> String {
         let minutes = state.initialMs / 60_000
         let inc = state.incrementMs / 1000
-        return "Play me at chess! \(minutes)+\(inc) on Chess AI ♟️ \(state.inviteURL.absoluteString)"
+        return "Play me at chess! \(minutes)+\(inc) on Chess AI ♟️ Finish the game and we both get a free month of Diamond. \(state.inviteURL.absoluteString)"
     }
 }
+
+#if DEBUG
+/// Screenshot-only sample data: `--preview-friend-reward` shows a reward
+/// card on Home, `--preview-friend-waiting` opens the lobby's waiting screen.
+enum FriendPreview {
+    static var reward: ReferralReward? {
+        guard ProcessInfo.processInfo.arguments.contains("--preview-friend-reward") else { return nil }
+        return decode(#"{"code":"PREVIEW","role":"inviter","assigned_at":"\#(Date.now.ISO8601Format())"}"#)
+    }
+
+    static var waitingGame: FriendGameState? {
+        guard ProcessInfo.processInfo.arguments.contains("--preview-friend-waiting") else { return nil }
+        return decode(#"""
+        {"id":"\#(UUID().uuidString)","code":"K7QX2M","host_id":"\#(UUID().uuidString)","guest_id":null,
+         "host_color":"white","initial_ms":600000,"increment_ms":0,"status":"waiting","moves":[],
+         "white_ms":600000,"black_ms":600000,"turn_elapsed_ms":0,"result":null,"termination":null,
+         "host_name":"Raj","guest_name":null}
+        """#)
+    }
+
+    private static func decode<T: Decodable>(_ json: String) -> T? {
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        return try? decoder.decode(T.self, from: Data(json.utf8))
+    }
+}
+#endif

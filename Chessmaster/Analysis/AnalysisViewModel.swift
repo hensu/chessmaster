@@ -81,7 +81,7 @@ final class AnalysisViewModel {
 
     /// Requests the AI coaching report. Free players get one per week —
     /// the server enforces the limit, so everyone may ask.
-    func requestCoaching() {
+    func requestCoaching(automatic: Bool = false) {
         guard let container else { return }
         // Engine analysis is free; the AI coaching report is a paid feature.
         guard container.entitlements.isPremium else {
@@ -90,7 +90,12 @@ final class AnalysisViewModel {
             return
         }
         guard !coachingLoading, coachingReport == nil else { return }
-        container.sync.track("coaching_requested")
+        if automatic {
+            container.sync.track("auto_coach_started", ["plan": container.entitlements.plan.rawValue, "trigger": "habit"])
+        } else {
+            CoachHabit.coachingRequested()
+            container.sync.track("coaching_requested")
+        }
         coachingLoading = true
         coachingError = nil
         let gameID = game.id
