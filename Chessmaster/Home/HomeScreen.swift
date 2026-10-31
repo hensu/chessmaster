@@ -126,7 +126,7 @@ struct HomeScreen: View {
                             .foregroundStyle(.green)
                         VStack(alignment: .leading, spacing: 3) {
                             Text("Play a Friend").font(.headline)
-                            Label("Get 1 month of Diamond free", systemImage: "gift.fill")
+                            Text("Get 1 month of Diamond free")
                                 .font(.subheadline.weight(.semibold))
                                 .foregroundStyle(Self.offerGold)
                         }
