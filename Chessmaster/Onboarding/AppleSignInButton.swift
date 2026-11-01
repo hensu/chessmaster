@@ -18,7 +18,7 @@ struct AppleSignInButton: View {
             sync.track("signup_method_tapped", ["method": "apple"])
             let raw = Self.randomNonce()
             nonce = raw
-            request.requestedScopes = [.email]
+            request.requestedScopes = [.fullName, .email]
             request.nonce = Self.sha256(raw)
         } onCompletion: { result in
             guard case .success(let auth) = result,
@@ -29,6 +29,12 @@ struct AppleSignInButton: View {
             else { return }  // cancelled or malformed; not an error state
             Task { @MainActor in
                 await sync.signInWithApple(idToken: idToken, nonce: nonce)
+                // Apple shares the name only on the first authorization.
+                if sync.isSignedIn, sync.displayName == nil,
+                   let parts = credential.fullName,
+                   case let name = PersonNameComponentsFormatter().string(from: parts), !name.isEmpty {
+                    await sync.setDisplayName(name)
+                }
                 if sync.isSignedIn { onSignedIn() }
             }
         }

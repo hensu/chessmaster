@@ -482,6 +482,28 @@ public final class SyncService {
         }
     }
 
+    /// The player's name as friends see it (auth `full_name`/`name` metadata;
+    /// Google fills it, Apple only on first authorization, email never).
+    public var displayName: String? {
+        let meta = client?.auth.currentUser?.userMetadata ?? [:]
+        let name = (meta["full_name"]?.stringValue ?? meta["name"]?.stringValue)?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return name?.isEmpty == false ? name : nil
+    }
+
+    /// Saves the name to auth metadata (what friend games and pushes show).
+    @discardableResult
+    public func setDisplayName(_ name: String) async -> Bool {
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let client, !trimmed.isEmpty else { return false }
+        do {
+            _ = try await client.auth.update(user: UserAttributes(data: ["full_name": .string(trimmed)]))
+            return true
+        } catch {
+            return false
+        }
+    }
+
     public enum SignUpResult { case signedIn, confirmEmail, failed }
 
     /// Creates an email+password account. When the project requires email

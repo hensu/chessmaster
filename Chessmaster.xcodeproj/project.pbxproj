@@ -44,6 +44,7 @@
 		5C8594B674D07145EB2D5112 /* AnalysisKit in Frameworks */ = {isa = PBXBuildFile; productRef = BE0C52D0D0988BDDA92D098E /* AnalysisKit */; };
 		5CBED84720194D0CF7A0314E /* GoogleSignInHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07E081E4FE6684A66AF57062 /* GoogleSignInHelper.swift */; };
 		6029230A4576AC5EE83AA9E6 /* AccountSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0864AB3D33FFB8F751F67B0B /* AccountSheet.swift */; };
+		6C09D1963BC031F6218B4024 /* NameScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFCF3EF66D09789F552B3C4E /* NameScreen.swift */; };
 		70B125372D247B5F6C674E58 /* nn-37f18f62d772.nnue in Resources */ = {isa = PBXBuildFile; fileRef = 4A63FC7E699AF543CC54016D /* nn-37f18f62d772.nnue */; };
 		71984B00665DCCB9F7DCB65A /* EngineKit in Frameworks */ = {isa = PBXBuildFile; productRef = 1CEF6895CCC8F6F770C23EB1 /* EngineKit */; };
 		7D35B47D369CA70425DA082E /* CoachingModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 591140F6698E8D551CB2CFA0 /* CoachingModels.swift */; };
@@ -175,6 +176,7 @@
 		C97E5D9350FECD9CCE642DE5 /* AppleSignInButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppleSignInButton.swift; sourceTree = "<group>"; };
 		CE159BDCBB5518D966716257 /* RatingKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = RatingKit; path = Packages/RatingKit; sourceTree = SOURCE_ROOT; };
 		D118C3CC3859CE67056E5F1F /* LiveCoachingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LiveCoachingTests.swift; sourceTree = "<group>"; };
+		DFCF3EF66D09789F552B3C4E /* NameScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NameScreen.swift; sourceTree = "<group>"; };
 		E2C0147B49877B7A9A7FF87E /* StreakNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StreakNotifier.swift; sourceTree = "<group>"; };
 		E57E8B133FB2BC6AD3F69FE3 /* landing-demo.mp4 */ = {isa = PBXFileReference; path = "landing-demo.mp4"; sourceTree = "<group>"; };
 		EA15BBDFDCEDCBA351FC319C /* AdaptiveLevel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AdaptiveLevel.swift; sourceTree = "<group>"; };
@@ -349,6 +351,7 @@
 				C97E5D9350FECD9CCE642DE5 /* AppleSignInButton.swift */,
 				07E081E4FE6684A66AF57062 /* GoogleSignInHelper.swift */,
 				28A8E7645E6614A3EEBF363B /* LandingScreen.swift */,
+				DFCF3EF66D09789F552B3C4E /* NameScreen.swift */,
 				590A590FE53E9390D1813D61 /* OnboardingPaywall.swift */,
 				9CA68C5D9F7B60986D8A9507 /* WelcomeScreen.swift */,
 			);
@@ -609,6 +612,7 @@
 				E552E5774E8FCA7C659C2C0F /* LearnModels.swift in Sources */,
 				3DAE95ECEAB971DB62941656 /* LearnScreen.swift in Sources */,
 				4A66156D57D8DD6CBA4B3627 /* LessonScreen.swift in Sources */,
+				6C09D1963BC031F6218B4024 /* NameScreen.swift in Sources */,
 				C84489BB057E4D497C096492 /* NotificationCoordinator.swift in Sources */,
 				B153F208ACCECF958F3222F2 /* NotificationPermission.swift in Sources */,
 				8D0A96691EA0354428810614 /* OnboardingPaywall.swift in Sources */,

@@ -21,6 +21,9 @@ struct RootView: View {
     @State private var inviteSignIn = false
     @State private var lobbyGame: FriendGameState?
     @State private var inviteError: String?
+    /// Invitee has no name yet: ask before joining so the host sees it.
+    @State private var inviteNamePrompt = false
+    @State private var inviteNameAsked = false
 
     /// Decide once (when the session restore settles) whether to show the
     /// onboarding cover. After that the cover's lifetime is owned by
@@ -44,6 +47,17 @@ struct RootView: View {
             welcomePresented = false
             if !inviteSignIn { container.sync.track("friend_signup_prompted") }
             inviteSignIn = true
+            return
+        }
+        if container.sync.displayName == nil, !inviteNameAsked {
+            inviteNameAsked = true
+            let fromSignIn = inviteSignIn
+            inviteSignIn = false
+            Task { @MainActor in
+                // Let the sign-in sheet finish dismissing first.
+                if fromSignIn { try? await Task.sleep(for: .milliseconds(600)) }
+                inviteNamePrompt = true
+            }
             return
         }
         container.pendingInviteCode = nil
@@ -211,6 +225,14 @@ struct RootView: View {
         .sheet(isPresented: $inviteSignIn) {
             AccountSheet(sync: container.sync,
                          subtitle: "A friend invited you to a game of chess. Sign in to join — it takes one tap.")
+        }
+        .sheet(isPresented: $inviteNamePrompt) {
+            NameScreen(source: "invite") {
+                inviteNamePrompt = false
+                handleInvite()
+            }
+            .environment(container)
+            .interactiveDismissDisabled()
         }
         .sheet(item: $lobbyGame) { game in
             FriendLobbySheet(initial: game)

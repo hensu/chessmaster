@@ -21,6 +21,8 @@ struct FriendLobbySheet: View {
     @State private var watchTask: Task<Void, Never>?
     @State private var pollTask: Task<Void, Never>?
     @State private var showSignIn = false
+    /// No name on the account yet — ask so the invite shows who it's from.
+    @State private var askName = false
     /// Who the invite was texted to (Contacts), for the waiting screen.
     @State private var invitedName: String?
     /// People played before: one tap challenges them again.
@@ -58,6 +60,7 @@ struct FriendLobbySheet: View {
         .trackScreen("FriendLobby")
         .onAppear {
             if let initial, game == nil { waitFor(initial) }
+            askName = container.sync.isSignedIn && container.sync.displayName == nil
         }
         .task {
             recent = await container.sync.recentFriends()
@@ -66,6 +69,14 @@ struct FriendLobbySheet: View {
         .onDisappear { stopWatching() }
         .sheet(isPresented: $showSignIn) {
             AccountSheet(sync: container.sync, subtitle: "Sign in so your friend can find you.")
+                .onDisappear {
+                    askName = container.sync.isSignedIn && container.sync.displayName == nil
+                }
+        }
+        .sheet(isPresented: $askName) {
+            NameScreen(source: "lobby") { askName = false }
+                .environment(container)
+                .interactiveDismissDisabled()
         }
     }
 

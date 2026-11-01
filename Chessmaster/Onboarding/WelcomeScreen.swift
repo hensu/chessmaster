@@ -19,7 +19,7 @@ struct WelcomeScreen: View {
     private enum Step: Int, CaseIterable {
         case landing
         case goal, experience, rating, opening, midgame, endgame, hero, rivals, source
-        case computing, score, promise, signup, paywall
+        case computing, score, promise, signup, name, paywall
     }
     @State private var step: Step = .landing
 
@@ -120,18 +120,18 @@ struct WelcomeScreen: View {
             case .signup:
                 SignupPage(
                     onSignedIn: {
-                        // Sign-up is required; after it, show the soft paywall
-                        // (unless they already have a subscription).
-                        if container.entitlements.isPremium {
-                            onDone()
+                        if container.sync.displayName == nil {
+                            withAnimation { step = .name }
                         } else {
-                            withAnimation { step = .paywall }
+                            afterName()
                         }
                     },
                     // Existing account — straight into the app, no paywall.
                     onExistingSignIn: onDone
                 )
                 .onAppear { container.sync.track("signup_viewed") }
+            case .name:
+                NameScreen(source: "onboarding", onDone: afterName)
             case .paywall:
                 OnboardingPaywall(onFinish: onDone)
                     .onAppear { container.sync.track("paywall_viewed", ["source": "onboarding"]) }
@@ -144,6 +144,23 @@ struct WelcomeScreen: View {
                 quizDone = false
             }
             if quizDone { step = .signup }
+            #if DEBUG
+            // Screenshots: jump to a quiz step, e.g. --onboarding-step=source
+            if let arg = ProcessInfo.processInfo.arguments.first(where: { $0.hasPrefix("--onboarding-step=") }),
+               let target = Step.allCases.first(where: { "--onboarding-step=\($0)" == arg }) {
+                step = target
+            }
+            #endif
+        }
+    }
+
+    /// Sign-up is required; after it (and the name), show the soft paywall
+    /// unless they already have a subscription.
+    private func afterName() {
+        if container.entitlements.isPremium {
+            onDone()
+        } else {
+            withAnimation { step = .paywall }
         }
     }
 
