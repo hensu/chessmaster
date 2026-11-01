@@ -102,13 +102,13 @@ struct WelcomeScreen: View {
                 ]) { advance(to: .source) }
             case .source:
                 quiz(title: "How did you hear about us?", selection: $source, options: [
-                    ("magnifyingglass", "App Store search", "app_store"),
+                    ("brand-appstore", "App Store search", "app_store"),
                     ("person.2.fill", "A friend", "friend"),
-                    ("play.rectangle.fill", "TikTok", "tiktok"),
-                    ("camera.fill", "Instagram", "instagram"),
-                    ("play.tv.fill", "YouTube", "youtube"),
-                    ("globe", "Google", "google"),
-                    ("bubble.left.and.bubble.right.fill", "Reddit", "reddit"),
+                    ("brand-tiktok", "TikTok", "tiktok"),
+                    ("brand-instagram", "Instagram", "instagram"),
+                    ("brand-youtube", "YouTube", "youtube"),
+                    ("brand-google", "Google", "google"),
+                    ("brand-reddit", "Reddit", "reddit"),
                     ("ellipsis.circle", "Something else", "other"),
                 ]) { startComputing() }
             case .computing:
@@ -460,11 +460,20 @@ private struct OptionCard: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 14) {
-                Image(systemName: icon)
-                    .font(.body.weight(.semibold))
-                    .foregroundStyle(.primary)
-                    .frame(width: 44, height: 44)
-                    .background(Color(.secondarySystemBackground), in: Circle())
+                if icon.hasPrefix("brand-") {
+                    // Full-color logo from the asset catalog (Brands/).
+                    Image(icon)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 36, height: 36)
+                        .frame(width: 44, height: 44)
+                } else {
+                    Image(systemName: icon)
+                        .font(.body.weight(.semibold))
+                        .foregroundStyle(.primary)
+                        .frame(width: 44, height: 44)
+                        .background(Color(.secondarySystemBackground), in: Circle())
+                }
                 Text(label)
                     .font(.body.weight(.medium))
                     .foregroundStyle(.primary)
