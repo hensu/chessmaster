@@ -43,6 +43,8 @@ struct HomeScreen: View {
     @State private var rewards: [ReferralReward] = []
     @Environment(DependencyContainer.self) private var container
 
+    /// Referral codes a subscriber already tapped to redeem (see rewardCard).
+    private static let claimedRewardsKey = "referral.claimedCodes"
     /// Same gold as the AI coach's premium crown.
     private static let offerGold = Color(red: 0.961, green: 0.769, blue: 0.318)
 
@@ -405,7 +407,8 @@ struct HomeScreen: View {
     private func refreshFriendState() async {
         guard container.sync.isSignedIn else { return }
         openFriendGames = await container.sync.openFriendGames()
-        let fresh = await container.sync.unredeemedReferralRewards()
+        let claimed = Set(UserDefaults.standard.stringArray(forKey: Self.claimedRewardsKey) ?? [])
+        let fresh = await container.sync.unredeemedReferralRewards().filter { !claimed.contains($0.code) }
         for reward in fresh where !rewards.contains(reward) {
             container.sync.track("referral_reward_shown", ["role": reward.role])
         }
@@ -477,6 +480,13 @@ struct HomeScreen: View {
         Button {
             container.sync.track("referral_redeem_tapped", ["role": reward.role])
             UIApplication.shared.open(reward.redeemURL(appID: "6790178402"))
+            // Already subscribed: Apple holds the code until their next
+            // renewal, so StoreKit can't confirm it yet — retire on tap.
+            if container.entitlements.isPremium {
+                let claimed = UserDefaults.standard.stringArray(forKey: Self.claimedRewardsKey) ?? []
+                UserDefaults.standard.set(claimed + [reward.code], forKey: Self.claimedRewardsKey)
+                rewards.removeAll { $0.code == reward.code }
+            }
         } label: {
             HStack(spacing: 12) {
                 Text("🎁").font(.title2)

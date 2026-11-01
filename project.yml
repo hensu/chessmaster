@@ -35,8 +35,8 @@ settings:
     # Single source of truth for versions (Info.plist references these).
     # TestFlight is at 1.0 (18): bump CURRENT_PROJECT_VERSION before every
     # archive; it must exceed the highest build ever uploaded.
-    MARKETING_VERSION: "1.0.3"
-    CURRENT_PROJECT_VERSION: "61"
+    MARKETING_VERSION: "1.0.4"
+    CURRENT_PROJECT_VERSION: "62"
     # APNs environment drives the aps-environment entitlement (below) and must
     # match the build's token type: Debug/local = sandbox, Release
     # (TestFlight/App Store) = production. The client reports the same split
