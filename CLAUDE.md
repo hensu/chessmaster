@@ -112,3 +112,8 @@ service this client talks to.
 - **Always push to GitHub right after committing** (`git push`, including `main` after a merge) — never leave commits local. Standing instruction from the owner; don't ask.
 - Keep this file updated when architecture, process, or backend facts change — future sessions rely on it (past progress was lost because it didn't exist until 2026-07-13).
 - UI test launch args gate app behavior: `--uitest`, `--reset-welcome` (forces full onboarding quiz), `--uitest-signin-*`, `--autostart*`.
+
+## Website & SEO (repo ~/dev/getchessai, GitHub Pages)
+
+- Blog at getchessai.com/blog/: posts are `blog/_src/<slug>.html` (JSON header line + body HTML) → `python3 blog/build.py` regenerates post pages, blog index and `sitemap.xml`. Topics were picked (2026-11-01) from Keyword Planner volumes where Chess.com only ranks via user forum/blog posts (free game review, average rating, blundering, tilt, training plan, Diamond worth it, AI coach, how long to get good). GA event `blog_appstore_clicked` (`post`).
+- Google Search Console: URL-prefix property `https://getchessai.com/`, verified by the HTML file `google4218bbcf1e51e5c9.html` at the site root (never delete it); sitemap submitted.
