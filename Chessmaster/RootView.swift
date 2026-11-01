@@ -27,6 +27,10 @@ struct RootView: View {
     #if DEBUG
     /// Screenshots: --preview-paywall opens the upgrade sheet at launch.
     @State private var previewPaywall = ProcessInfo.processInfo.arguments.contains("--preview-paywall")
+    /// --preview-daily opens today's daily puzzle; --preview-review opens the
+    /// latest analyzed game (share card button).
+    @State private var previewDaily = ProcessInfo.processInfo.arguments.contains("--preview-daily")
+    @State private var previewReview = ProcessInfo.processInfo.arguments.contains("--preview-review")
     #endif
 
     /// Decide once (when the session restore settles) whether to show the
@@ -233,6 +237,26 @@ struct RootView: View {
         #if DEBUG
         .sheet(isPresented: $previewPaywall) {
             AppPaywall(source: "debug_preview").environment(container)
+        }
+        .sheet(isPresented: $previewDaily) {
+            if let puzzle = DailyPuzzle.puzzle() {
+                NavigationStack { PuzzleScreen(daily: puzzle) }
+                    .environment(container)
+                    .environment(container.learnProgress)
+            }
+        }
+        .sheet(isPresented: $previewReview) {
+            if let game = (try? container.games.recentGames(limit: 50))?.first(where: { $0.analysisJSON != nil }) {
+                if ProcessInfo.processInfo.arguments.contains("--card-only"),
+                   let content = ((try? container.games.recentGames(limit: 200)) ?? [])
+                       .compactMap({ AnalysisViewModel(game: $0).shareCardContent })
+                       .first(where: { $0.moment != nil }) ?? AnalysisViewModel(game: game).shareCardContent {
+                    ShareCardView(content: content)
+                } else {
+                    NavigationStack { AnalysisScreen(game: game, source: "debug_preview") }
+                        .environment(container)
+                }
+            }
         }
         #endif
         .sheet(isPresented: $inviteNamePrompt) {

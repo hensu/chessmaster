@@ -17,6 +17,12 @@ struct PuzzleScreen: View {
         _model = State(initialValue: PuzzleViewModel(category: category))
     }
 
+    /// Today's daily puzzle: one position, a streak, a shareable result.
+    init(daily puzzle: Puzzle) {
+        category = PuzzleCategory(rawValue: puzzle.category) ?? .fork
+        _model = State(initialValue: PuzzleViewModel(daily: puzzle))
+    }
+
     var body: some View {
         VStack(spacing: 12) {
             if let puzzle = model.puzzle {
@@ -62,12 +68,14 @@ struct PuzzleScreen: View {
             }
         }
         .padding(.horizontal, 8)
-        .navigationTitle(category.title)
+        .navigationTitle(model.daily != nil ? "Daily #\(DailyPuzzle.number())" : category.title)
         .trackScreen("Puzzle")
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             model.attach(container: container, progress: progress)
-            model.startNextPuzzle()
+            if model.daily == nil || model.puzzle == nil {
+                model.startNextPuzzle()
+            }
         }
         .onDisappear { model.stop() }
     }
@@ -89,9 +97,15 @@ struct PuzzleScreen: View {
                 .font(.subheadline.weight(.medium))
                 .foregroundStyle(.green)
         case .solved:
-            Label("Solved! 🎉", systemImage: "checkmark.seal.fill")
-                .font(.headline)
-                .foregroundStyle(.green)
+            if model.daily != nil, DailyPuzzle.streak() > 0 {
+                Label("Solved! 🔥 \(DailyPuzzle.streak())-day streak", systemImage: "checkmark.seal.fill")
+                    .font(.headline)
+                    .foregroundStyle(.green)
+            } else {
+                Label("Solved! 🎉", systemImage: "checkmark.seal.fill")
+                    .font(.headline)
+                    .foregroundStyle(.green)
+            }
         case .loading:
             ProgressView().controlSize(.small)
         }
@@ -99,7 +113,19 @@ struct PuzzleScreen: View {
 
     private var bottomControls: some View {
         HStack(spacing: 10) {
-            if model.phase == .solved {
+            if model.phase == .solved, model.daily != nil, let text = DailyPuzzle.shareText() {
+                ShareLink(item: text) {
+                    Label("Share result", systemImage: "square.and.arrow.up")
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.green)
+                .controlSize(.large)
+                .simultaneousGesture(TapGesture().onEnded {
+                    container.sync.track("daily_puzzle_shared", ["streak": String(DailyPuzzle.streak())])
+                })
+            } else if model.phase == .solved {
                 Button {
                     model.startNextPuzzle()
                 } label: {
@@ -130,6 +156,8 @@ final class PuzzleViewModel {
     enum Phase { case loading, yourTurn, wrong, opponentThinking, solved }
 
     let category: PuzzleCategory
+    /// Set when this is the daily puzzle (single position, streak, share).
+    let daily: Puzzle?
     private(set) var puzzle: Puzzle?
     private(set) var session: GameSession
     private(set) var playerColor: Piece.Color = .white
@@ -151,13 +179,22 @@ final class PuzzleViewModel {
 
     init(category: PuzzleCategory) {
         self.category = category
+        self.daily = nil
+        self.session = GameSession(config: GameConfig())
+    }
+
+    init(daily puzzle: Puzzle) {
+        self.category = PuzzleCategory(rawValue: puzzle.category) ?? .fork
+        self.daily = puzzle
         self.session = GameSession(config: GameConfig())
     }
 
     func attach(container: DependencyContainer, progress: LearnProgress) {
         self.container = container
         self.progress = progress
-        if queue.isEmpty {
+        if let daily {
+            if puzzle == nil { queue = [daily] }
+        } else if queue.isEmpty {
             let all = LearnContent.puzzles(in: category)
             let unsolved = all.filter { !(progress.solvedPuzzles.contains($0.id)) }
             queue = unsolved.isEmpty ? all : unsolved
@@ -253,6 +290,13 @@ final class PuzzleViewModel {
                     "attempts": String(attempts + 1),
                     "hint": usedHint ? "true" : "false",
                 ])
+                if daily != nil {
+                    let streak = DailyPuzzle.recordSolve(attempts: attempts + 1, usedHint: usedHint)
+                    container?.sync.track("daily_puzzle_solved", [
+                        "number": String(DailyPuzzle.number()), "attempts": String(attempts + 1),
+                        "hint": usedHint ? "true" : "false", "streak": String(streak),
+                    ])
+                }
                 if let container {
                     ReviewPrompt.puzzleSolved(firstTry: attempts == 0 && !usedHint, container: container)
                 }

@@ -11,6 +11,14 @@ struct LearnScreen: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 18) {
+                if let daily = DailyPuzzle.puzzle() {
+                    NavigationLink(value: daily) {
+                        dailyCard
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.horizontal)
+                }
+
                 Text("Puzzles")
                     .font(.title3.bold())
                     .padding(.horizontal)
@@ -46,7 +54,33 @@ struct LearnScreen: View {
         .navigationTitle("Learn")
         .trackScreen("Learn")
         .navigationDestination(for: PuzzleCategory.self) { PuzzleScreen(category: $0) }
+        .navigationDestination(for: Puzzle.self) { PuzzleScreen(daily: $0) }
         .navigationDestination(for: Lesson.self) { LessonScreen(lesson: $0) }
+    }
+
+    private var dailyCard: some View {
+        let number = DailyPuzzle.number()
+        let solved = DailyPuzzle.result(number: number) != nil
+        let streak = DailyPuzzle.streak(today: number)
+        return HStack(spacing: 12) {
+            Image(systemName: solved ? "checkmark.seal.fill" : "calendar")
+                .font(.title2)
+                .foregroundStyle(solved ? .green : .orange)
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Daily Puzzle #\(number)")
+                    .font(.headline)
+                Text(solved ? "Solved today · come back tomorrow" : "Keep your streak going")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            if streak > 0 {
+                Text("🔥 \(streak)").font(.headline)
+            }
+        }
+        .padding(14)
+        .background(Color(.secondarySystemGroupedBackground),
+                    in: RoundedRectangle(cornerRadius: 14))
     }
 
     private func categoryCard(_ category: PuzzleCategory) -> some View {

@@ -18,6 +18,7 @@ struct AnalysisScreen: View {
     @State private var trackedOpen = false
     /// Drives the breathing emerald glow on the coaching CTA.
     @State private var ctaGlow = false
+    @State private var shareImage: Image?
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     init(game: GameRecord, openAtWorstMoment: Bool = false, source: String = "history",
@@ -53,6 +54,8 @@ struct AnalysisScreen: View {
                     replayControls
 
                     analysisSection
+
+                    shareReviewButton
 
                     coachingSection
                         .id("coaching")
@@ -107,13 +110,16 @@ struct AnalysisScreen: View {
             if openAtWorstMoment {
                 model.startGuidedReview()
             }
+            if shareImage == nil { renderShareCard() }
         }
         // The coach reads each note aloud as the player steps through
         // moments (mutable via the speaker button or Profile → Sound).
         .onChange(of: model.mistakeIndex) { speakCurrentNote() }
         .onChange(of: model.coachingReport) { _, report in
             if report != nil { speakCurrentNote() }
+            renderShareCard()
         }
+        .onChange(of: model.analysis == nil) { renderShareCard() }
         .onChange(of: model.trainingConfig) { _, config in
             if config != nil { container.coachVoice.stop() }
         }
@@ -467,6 +473,34 @@ struct AnalysisScreen: View {
             .buttonStyle(.borderedProminent)
             .padding(.horizontal)
         }
+    }
+
+    /// Shareable card (accuracy, "played like", biggest mistake + the
+    /// coach's line when a report exists). Re-rendered when the report lands.
+    @ViewBuilder
+    private var shareReviewButton: some View {
+        if let image = shareImage {
+            ShareLink(
+                item: image,
+                message: Text("My Chess AI game review. Can you beat my accuracy? https://apps.apple.com/app/id6790178402"),
+                preview: SharePreview("My game review", image: image)
+            ) {
+                Label("Share my review", systemImage: "square.and.arrow.up")
+                    .font(.subheadline.weight(.semibold))
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .padding(.horizontal)
+            .simultaneousGesture(TapGesture().onEnded {
+                container.sync.track("review_card_shared", [
+                    "has_report": model.coachingReport == nil ? "false" : "true",
+                ])
+            })
+        }
+    }
+
+    private func renderShareCard() {
+        shareImage = model.shareCardContent.flatMap(ShareCardView.image(for:))
     }
 
     private func winCard(side: String, winPercent: Double, accuracy: Double) -> some View {

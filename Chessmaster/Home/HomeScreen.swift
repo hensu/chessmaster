@@ -38,6 +38,7 @@ struct HomeScreen: View {
     /// Friend games: the invite sheet, games still open on the server, and
     /// free months earned by inviting (App Store offer codes).
     @State private var showFriendLobby = false
+    @State private var dailyPuzzle: Puzzle?
     @State private var openFriendGames: [FriendGameState] = []
     @State private var waitingInvite: FriendGameState?
     @State private var rewards: [ReferralReward] = []
@@ -103,6 +104,8 @@ struct HomeScreen: View {
                         }
                     }
                 }
+
+                dailyPuzzleRow
 
                 LazyVGrid(columns: columns, spacing: 10) {
                     ForEach(TimeControl.presets, id: \.self) { tc in
@@ -195,6 +198,7 @@ struct HomeScreen: View {
                 start(timeControl: tc)
             }
         }
+        .navigationDestination(item: $dailyPuzzle) { PuzzleScreen(daily: $0) }
         .navigationDestination(item: $pendingConfig) { config in
             GameScreen(config: config)
         }
@@ -517,6 +521,45 @@ struct HomeScreen: View {
     }
 
     // MARK: - Pieces
+
+    /// Wordle-style daily puzzle: same position for everyone today.
+    @ViewBuilder
+    private var dailyPuzzleRow: some View {
+        if let puzzle = DailyPuzzle.puzzle() {
+            let number = DailyPuzzle.number()
+            let solved = DailyPuzzle.result(number: number) != nil
+            let streak = DailyPuzzle.streak(today: number)
+            Button {
+                container.sync.track("daily_puzzle_opened", ["source": "home", "solved": solved ? "true" : "false"])
+                dailyPuzzle = puzzle
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: solved ? "checkmark.seal.fill" : "puzzlepiece.fill")
+                        .font(.title3)
+                        .foregroundStyle(solved ? .green : .orange)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Daily Puzzle #\(number)").font(.headline)
+                        Text(solved ? "Solved · share your result" : "Same puzzle for everyone today")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                    }
+                    Spacer()
+                    if streak > 0 {
+                        Text("🔥 \(streak)")
+                            .font(.subheadline.weight(.bold))
+                    }
+                    Image(systemName: "chevron.right")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(.tertiary)
+                }
+                .padding()
+                .background(Color(.secondarySystemGroupedBackground),
+                            in: RoundedRectangle(cornerRadius: 12))
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("dailyPuzzle")
+        }
+    }
 
     private func streakChip(_ emoji: String, _ label: String) -> some View {
         HStack(spacing: 6) {

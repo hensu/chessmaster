@@ -31,6 +31,7 @@
 		39EABF381E9523B7E99886CF /* ClockView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 080C07EF6CA7F8DF1BA86BA4 /* ClockView.swift */; };
 		3B3A88763AE458296EB4C7EF /* PremiumTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76A502CAA1DED324BE769D30 /* PremiumTests.swift */; };
 		3DAE95ECEAB971DB62941656 /* LearnScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 153C13EF98CD078C7B8BB360 /* LearnScreen.swift */; };
+		3DFBEFF36A868A89156EF6F2 /* DailyPuzzle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 141792E30197663EBC5912FE /* DailyPuzzle.swift */; };
 		40BE60BAF733DE51E4C6C425 /* LiveCoachingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = D118C3CC3859CE67056E5F1F /* LiveCoachingTests.swift */; };
 		410328E5D34AC424A2EBC56D /* AppPaywall.swift in Sources */ = {isa = PBXBuildFile; fileRef = F42DB7C22C6DAF6190D0EBA6 /* AppPaywall.swift */; };
 		417D74CF0B4FC489472D461D /* ScreenTracking.swift in Sources */ = {isa = PBXBuildFile; fileRef = A9168F748E7D93F7604CE709 /* ScreenTracking.swift */; };
@@ -45,6 +46,7 @@
 		5CBED84720194D0CF7A0314E /* GoogleSignInHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 07E081E4FE6684A66AF57062 /* GoogleSignInHelper.swift */; };
 		6029230A4576AC5EE83AA9E6 /* AccountSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0864AB3D33FFB8F751F67B0B /* AccountSheet.swift */; };
 		6C09D1963BC031F6218B4024 /* NameScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DFCF3EF66D09789F552B3C4E /* NameScreen.swift */; };
+		6C2450B3AFB0E3A9A20CA9D0 /* ShareCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8E442C68406D8C06589168E7 /* ShareCard.swift */; };
 		70B125372D247B5F6C674E58 /* nn-37f18f62d772.nnue in Resources */ = {isa = PBXBuildFile; fileRef = 4A63FC7E699AF543CC54016D /* nn-37f18f62d772.nnue */; };
 		71984B00665DCCB9F7DCB65A /* EngineKit in Frameworks */ = {isa = PBXBuildFile; productRef = 1CEF6895CCC8F6F770C23EB1 /* EngineKit */; };
 		7D35B47D369CA70425DA082E /* CoachingModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 591140F6698E8D551CB2CFA0 /* CoachingModels.swift */; };
@@ -111,6 +113,7 @@
 		0898120F898BC2FA8E1FEFC0 /* BoardUI */ = {isa = PBXFileReference; lastKnownFileType = folder; name = BoardUI; path = Packages/BoardUI; sourceTree = SOURCE_ROOT; };
 		0C44A4607B0F47C828758447 /* EngineKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = EngineKit; path = Packages/EngineKit; sourceTree = SOURCE_ROOT; };
 		0C4B17CD8C7533EF083CE7C6 /* ReengagementNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReengagementNotifier.swift; sourceTree = "<group>"; };
+		141792E30197663EBC5912FE /* DailyPuzzle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DailyPuzzle.swift; sourceTree = "<group>"; };
 		14CE24946890871755478E46 /* HistoryScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryScreen.swift; sourceTree = "<group>"; };
 		153C13EF98CD078C7B8BB360 /* LearnScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LearnScreen.swift; sourceTree = "<group>"; };
 		19FDD251C700D104CDBA1634 /* nn-c288c895ea92.nnue */ = {isa = PBXFileReference; path = "nn-c288c895ea92.nnue"; sourceTree = "<group>"; };
@@ -148,6 +151,7 @@
 		7FF5EC897345FA9EC1D2B846 /* ChessmasterUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = ChessmasterUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		8497047242D4B503E798971A /* PaywallKit */ = {isa = PBXFileReference; lastKnownFileType = folder; name = PaywallKit; path = Packages/PaywallKit; sourceTree = SOURCE_ROOT; };
 		8A4856FB637E078C558B6C0B /* RatingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RatingTests.swift; sourceTree = "<group>"; };
+		8E442C68406D8C06589168E7 /* ShareCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShareCard.swift; sourceTree = "<group>"; };
 		8F0873660DC6098701DE61E9 /* ChessmasterApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChessmasterApp.swift; sourceTree = "<group>"; };
 		909AD89092D6C75E48CFADBC /* PushRegistration.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushRegistration.swift; sourceTree = "<group>"; };
 		91CCE434D516DEE5BC1A0B37 /* SupabaseSync */ = {isa = PBXFileReference; lastKnownFileType = folder; name = SupabaseSync; path = Packages/SupabaseSync; sourceTree = SOURCE_ROOT; };
@@ -375,6 +379,7 @@
 				29572AC62202C5EAC45ACF65 /* AnalysisScreen.swift */,
 				C5B169AA45BF3FC5F876BAE8 /* AnalysisViewModel.swift */,
 				C5D22028A8E74E099AA3912D /* CoachVoice.swift */,
+				8E442C68406D8C06589168E7 /* ShareCard.swift */,
 				A1727D1DE66BFC75B4B794D2 /* StockfishNets.swift */,
 			);
 			path = Analysis;
@@ -435,6 +440,7 @@
 		F223BBF6D3138E197810F490 /* Learn */ = {
 			isa = PBXGroup;
 			children = (
+				141792E30197663EBC5912FE /* DailyPuzzle.swift */,
 				5E3C725C84F48E94CACE977D /* LearnModels.swift */,
 				153C13EF98CD078C7B8BB360 /* LearnScreen.swift */,
 				31B14C01D3B7B71E766D5DE3 /* LessonScreen.swift */,
@@ -601,6 +607,7 @@
 				7D35B47D369CA70425DA082E /* CoachingModels.swift in Sources */,
 				02E7556C1C02D2B31025DCC2 /* CoachingReportView.swift in Sources */,
 				95CA07E644A861B921288006 /* ContactInviter.swift in Sources */,
+				3DFBEFF36A868A89156EF6F2 /* DailyPuzzle.swift in Sources */,
 				B1AFA194E3FE9DAF35E10C0A /* DependencyContainer.swift in Sources */,
 				28BF18AF731C5DE8FC05D43B /* EngineOpponent.swift in Sources */,
 				49E67BFCAF9CE136B938D7AB /* FriendGame.swift in Sources */,
@@ -630,6 +637,7 @@
 				B7EB9FFA98E5C631544026AD /* RootView.swift in Sources */,
 				417D74CF0B4FC489472D461D /* ScreenTracking.swift in Sources */,
 				327B4F145F5D01DD189C2CAE /* SettingsScreen.swift in Sources */,
+				6C2450B3AFB0E3A9A20CA9D0 /* ShareCard.swift in Sources */,
 				11FF51C3F615DFE8ACE11334 /* SignupNudge.swift in Sources */,
 				EB64CCFD387DAC5B01106BAE /* StockfishNets.swift in Sources */,
 				5A8FC47D9A434B5B78808F64 /* StreakNotifier.swift in Sources */,
