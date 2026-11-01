@@ -37,6 +37,8 @@ struct WelcomeScreen: View {
     // Computing animation.
     @State private var computeProgress = 0.0
     @State private var computedScore = 0
+    /// The number on the score reveal while it counts up (see `revealScore`).
+    @State private var shownScore = 0
 
     var body: some View {
         ZStack {
@@ -65,14 +67,7 @@ struct WelcomeScreen: View {
             case .rating:
                 ratingPage
             case .opening:
-                quiz(title: "What's your go-to first move?",
-                     subtitle: "This helps calibrate your chess score.",
-                     selection: $opening, options: [
-                    ("arrow.up.circle.fill", "e4 — king's pawn", "e4"),
-                    ("arrow.up.circle", "d4 — queen's pawn", "d4"),
-                    ("sparkles", "Nf3, c4, or something spicy", "hypermodern"),
-                    ("questionmark.circle", "No idea what those mean", "none"),
-                ]) { advance(to: .midgame) }
+                openingPage
             case .midgame:
                 quiz(title: "How does your middlegame feel?", selection: $midgame, options: [
                     ("exclamationmark.triangle.fill", "I keep losing pieces", "loses"),
@@ -203,6 +198,33 @@ struct WelcomeScreen: View {
         }
     }
 
+    /// First move, pictured: each choice shows the move on a mini board.
+    /// Nothing is pre-selected.
+    private var openingPage: some View {
+        QuizScaffold(
+            progress: Double(step.rawValue) / 10.0,
+            title: "What's your go-to first move?",
+            subtitle: "This helps calibrate your chess score.",
+            canContinue: !opening.isEmpty,
+            onBack: {
+                container.sync.track("quiz_back", ["from": "opening"])
+                withAnimation { step = .rating }
+            },
+            onContinue: { advance(to: .midgame) }
+        ) {
+            VStack(spacing: 12) {
+                MoveOptionCard(title: "e4", subtitle: "King's pawn, two squares",
+                               move: ("e2", "e4"), selected: opening == "e4") { opening = "e4" }
+                MoveOptionCard(title: "d4", subtitle: "Queen's pawn, two squares",
+                               move: ("d2", "d4"), selected: opening == "d4") { opening = "d4" }
+                MoveOptionCard(title: "Nf3 / c4", subtitle: "Knight out first, or something spicy",
+                               move: ("g1", "f3"), selected: opening == "hypermodern") { opening = "hypermodern" }
+                MoveOptionCard(title: "No idea what those mean", subtitle: "Totally fine, we'll teach you",
+                               move: nil, selected: opening == "none") { opening = "none" }
+            }
+        }
+    }
+
     private var ratingPage: some View {
         QuizScaffold(
             progress: Double(step.rawValue) / 10.0,
@@ -251,11 +273,12 @@ struct WelcomeScreen: View {
             "computed_score": String(computedScore),
         ])
         Task { @MainActor in
-            for tick in 1...20 {
-                try? await Task.sleep(for: .milliseconds(110))
-                withAnimation { computeProgress = Double(tick) / 20 }
+            // ~5s so the % counter and checklist read as real work.
+            for tick in 1...50 {
+                try? await Task.sleep(for: .milliseconds(100))
+                withAnimation { computeProgress = Double(tick) / 50 }
             }
-            try? await Task.sleep(for: .milliseconds(250))
+            try? await Task.sleep(for: .milliseconds(500))
             withAnimation { step = .score }
         }
     }
@@ -334,10 +357,12 @@ struct WelcomeScreen: View {
             Spacer()
             Text("Your chess score")
                 .font(.title2.bold())
-            Text("\(computedScore)")
+            Text("\(shownScore)")
                 .font(.system(size: 84, weight: .bold, design: .rounded))
                 .monospacedDigit()
+                .contentTransition(.numericText(value: Double(shownScore)))
                 .padding(.top, 4)
+                .task { await revealScore() }
             Text("We'll start Chess AI at your level — hard enough to learn from, easy enough to beat. It adapts every game.")
                 .font(.callout)
                 .foregroundStyle(.secondary)
@@ -378,6 +403,30 @@ struct WelcomeScreen: View {
                 withAnimation { step = .signup }
             }
         }
+    }
+
+    /// Tease the reveal: climb slowly and stall ~200 below, then rush past
+    /// the real score and settle back onto it.
+    private func revealScore() async {
+        let target = computedScore
+        let stall = max(target - 200, 100)
+        shownScore = max(stall - 500, 0)
+        func run(to end: Int, steps: Int, ms: Int, easeOut: Bool) async {
+            let start = shownScore
+            for i in 1...steps {
+                try? await Task.sleep(for: .milliseconds(ms))
+                var t = Double(i) / Double(steps)
+                if easeOut { t = 1 - (1 - t) * (1 - t) }
+                withAnimation(.snappy(duration: 0.12)) {
+                    shownScore = start + Int((Double(end - start) * t).rounded())
+                }
+            }
+        }
+        await run(to: stall, steps: 30, ms: 60, easeOut: true)           // slow climb
+        try? await Task.sleep(for: .milliseconds(700))                    // "is that it?"
+        await run(to: target + 40, steps: 10, ms: 35, easeOut: false)     // rush past
+        try? await Task.sleep(for: .milliseconds(200))
+        await run(to: target, steps: 6, ms: 60, easeOut: true)            // settle
     }
 
     private func promiseRow(_ icon: String, _ text: String) -> some View {
@@ -484,6 +533,45 @@ private struct OptionCard: View {
                     .foregroundStyle(selected ? .primary : .tertiary)
             }
             .padding(14)
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(.systemBackground))
+                    .stroke(selected ? Color.primary : Color(.systemGray4),
+                            lineWidth: selected ? 2 : 1)
+            )
+        }
+        .buttonStyle(.plain)
+    }
+}
+
+/// Quiz card for a first move: name + plain-English line, mini board right.
+private struct MoveOptionCard: View {
+    let title: String
+    let subtitle: String
+    let move: (from: String, to: String)?
+    let selected: Bool
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            HStack(spacing: 14) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(title)
+                        .font(move == nil ? .body.weight(.semibold) : .title3.weight(.bold))
+                    Text(subtitle)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .multilineTextAlignment(.leading)
+                Spacer(minLength: 8)
+                if let move {
+                    MiniMoveBoard(from: move.from, to: move.to, square: 9)
+                }
+            }
+            .foregroundStyle(.primary)
+            .padding(.vertical, move == nil ? 18 : 12)
+            .padding(.leading, 18)
+            .padding(.trailing, 14)
             .background(
                 RoundedRectangle(cornerRadius: 16)
                     .fill(Color(.systemBackground))

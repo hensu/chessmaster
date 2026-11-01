@@ -48,6 +48,7 @@
 		70B125372D247B5F6C674E58 /* nn-37f18f62d772.nnue in Resources */ = {isa = PBXBuildFile; fileRef = 4A63FC7E699AF543CC54016D /* nn-37f18f62d772.nnue */; };
 		71984B00665DCCB9F7DCB65A /* EngineKit in Frameworks */ = {isa = PBXBuildFile; productRef = 1CEF6895CCC8F6F770C23EB1 /* EngineKit */; };
 		7D35B47D369CA70425DA082E /* CoachingModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 591140F6698E8D551CB2CFA0 /* CoachingModels.swift */; };
+		83549B8EE3D3A4EA41D23294 /* MiniMoveBoard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 31CE520A95AE37A96254AF81 /* MiniMoveBoard.swift */; };
 		8A84FBA4F87C685BD9749B3D /* GameViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB773F4A10187306BCBE7211 /* GameViewModel.swift */; };
 		8A89439307DD2723499D863E /* CoachNudgeNotifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 371470DFAB25702427DE592A /* CoachNudgeNotifier.swift */; };
 		8BF0429D60A7B52A04195A82 /* RatingKit in Frameworks */ = {isa = PBXBuildFile; productRef = BB5C560AA775CB11299BBE89 /* RatingKit */; };
@@ -123,6 +124,7 @@
 		2E8434CBCDC7101F6E60E05C /* ReviewPrompt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReviewPrompt.swift; sourceTree = "<group>"; };
 		2EE12846F7E4FC7ACC4652A8 /* Chessmaster.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Chessmaster.entitlements; sourceTree = "<group>"; };
 		31B14C01D3B7B71E766D5DE3 /* LessonScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LessonScreen.swift; sourceTree = "<group>"; };
+		31CE520A95AE37A96254AF81 /* MiniMoveBoard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MiniMoveBoard.swift; sourceTree = "<group>"; };
 		32338B9CDEF92C6560367E7B /* Chessmaster.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Chessmaster.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		3353EE908401E16FAD9D2F29 /* AnalysisPrefetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalysisPrefetcher.swift; sourceTree = "<group>"; };
 		371470DFAB25702427DE592A /* CoachNudgeNotifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CoachNudgeNotifier.swift; sourceTree = "<group>"; };
@@ -351,6 +353,7 @@
 				C97E5D9350FECD9CCE642DE5 /* AppleSignInButton.swift */,
 				07E081E4FE6684A66AF57062 /* GoogleSignInHelper.swift */,
 				28A8E7645E6614A3EEBF363B /* LandingScreen.swift */,
+				31CE520A95AE37A96254AF81 /* MiniMoveBoard.swift */,
 				DFCF3EF66D09789F552B3C4E /* NameScreen.swift */,
 				590A590FE53E9390D1813D61 /* OnboardingPaywall.swift */,
 				9CA68C5D9F7B60986D8A9507 /* WelcomeScreen.swift */,
@@ -612,6 +615,7 @@
 				E552E5774E8FCA7C659C2C0F /* LearnModels.swift in Sources */,
 				3DAE95ECEAB971DB62941656 /* LearnScreen.swift in Sources */,
 				4A66156D57D8DD6CBA4B3627 /* LessonScreen.swift in Sources */,
+				83549B8EE3D3A4EA41D23294 /* MiniMoveBoard.swift in Sources */,
 				6C09D1963BC031F6218B4024 /* NameScreen.swift in Sources */,
 				C84489BB057E4D497C096492 /* NotificationCoordinator.swift in Sources */,
 				B153F208ACCECF958F3222F2 /* NotificationPermission.swift in Sources */,

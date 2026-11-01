@@ -24,6 +24,10 @@ struct RootView: View {
     /// Invitee has no name yet: ask before joining so the host sees it.
     @State private var inviteNamePrompt = false
     @State private var inviteNameAsked = false
+    #if DEBUG
+    /// Screenshots: --preview-paywall opens the upgrade sheet at launch.
+    @State private var previewPaywall = ProcessInfo.processInfo.arguments.contains("--preview-paywall")
+    #endif
 
     /// Decide once (when the session restore settles) whether to show the
     /// onboarding cover. After that the cover's lifetime is owned by
@@ -226,6 +230,11 @@ struct RootView: View {
             AccountSheet(sync: container.sync,
                          subtitle: "A friend invited you to a game of chess. Sign in to join — it takes one tap.")
         }
+        #if DEBUG
+        .sheet(isPresented: $previewPaywall) {
+            AppPaywall(source: "debug_preview").environment(container)
+        }
+        #endif
         .sheet(isPresented: $inviteNamePrompt) {
             NameScreen(source: "invite") {
                 inviteNamePrompt = false
