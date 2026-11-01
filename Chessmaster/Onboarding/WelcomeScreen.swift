@@ -18,7 +18,7 @@ struct WelcomeScreen: View {
 
     private enum Step: Int, CaseIterable {
         case landing
-        case goal, experience, rating, opening, midgame, endgame, hero, rivals
+        case goal, experience, rating, opening, midgame, endgame, hero, rivals, source
         case computing, score, promise, signup, paywall
     }
     @State private var step: Step = .landing
@@ -32,6 +32,7 @@ struct WelcomeScreen: View {
     @State private var endgame = ""
     @State private var hero = ""
     @State private var rivals = ""
+    @State private var source = ""
 
     // Computing animation.
     @State private var computeProgress = 0.0
@@ -98,6 +99,17 @@ struct WelcomeScreen: View {
                     ("person.2.fill", "My friends", "friends"),
                     ("network", "Everyone online", "online"),
                     ("figure.mind.and.body", "Myself — I just want to improve", "self"),
+                ]) { advance(to: .source) }
+            case .source:
+                quiz(title: "How did you hear about us?", selection: $source, options: [
+                    ("magnifyingglass", "App Store search", "app_store"),
+                    ("person.2.fill", "A friend", "friend"),
+                    ("play.rectangle.fill", "TikTok", "tiktok"),
+                    ("camera.fill", "Instagram", "instagram"),
+                    ("play.tv.fill", "YouTube", "youtube"),
+                    ("globe", "Google", "google"),
+                    ("bubble.left.and.bubble.right.fill", "Reddit", "reddit"),
+                    ("ellipsis.circle", "Something else", "other"),
                 ]) { startComputing() }
             case .computing:
                 computingPage
@@ -150,7 +162,7 @@ struct WelcomeScreen: View {
         onContinue: @escaping () -> Void
     ) -> some View {
         QuizScaffold(
-            progress: Double(step.rawValue) / 9.0,
+            progress: Double(step.rawValue) / 10.0,
             title: title,
             subtitle: subtitle,
             canContinue: !selection.wrappedValue.isEmpty,
@@ -176,7 +188,7 @@ struct WelcomeScreen: View {
 
     private var ratingPage: some View {
         QuizScaffold(
-            progress: Double(step.rawValue) / 9.0,
+            progress: Double(step.rawValue) / 10.0,
             title: "Do you know your rating?",
             subtitle: "From chess.com, lichess, or a club.",
             canContinue: true,
@@ -205,7 +217,8 @@ struct WelcomeScreen: View {
     // MARK: - Computing + score reveal
 
     private func startComputing() {
-        container.sync.track("quiz_step", ["step": "rivals"])
+        container.sync.track("quiz_step", ["step": "source"])
+        container.sync.track("acquisition_source", ["source": source])
         computedScore = Self.estimateScore(
             notSure: notSure, slider: Int(sliderRating), experience: experience,
             opening: opening, midgame: midgame, endgame: endgame
@@ -217,7 +230,7 @@ struct WelcomeScreen: View {
             "rating_known": notSure ? "no" : "yes",
             "self_rating": notSure ? "" : String(Int(sliderRating)),
             "opening": opening, "midgame": midgame, "endgame": endgame,
-            "hero": hero, "rivals": rivals,
+            "hero": hero, "rivals": rivals, "source": source,
             "computed_score": String(computedScore),
         ])
         Task { @MainActor in
