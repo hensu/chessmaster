@@ -2,7 +2,7 @@ import os, subprocess, sys
 R=os.path.abspath("raw")
 G=lambda s:f'<span class="g">{s}</span>'
 shots={
-"setA/01":("Your Personal 24/7<br>"+G("AI Chess Coach"),"Notes on every mistake, in your own games","an3"),
+"setA/01":("Your Personal 24×7<br>"+G("AI Chess Coach"),"Notes on every mistake, in your own games","an3"),
 "setA/02":("<span style=\"font-size:100px\">Every Game Reviewed,</span><br>"+G("Plain English"),"A coach&rsquo;s report after every game","report"),
 "setA/03":("See Your Mistakes,<br>"+G("Best Moves"),"Red is what you played. Green is better.","km2"),
 "setA/04":("An Opponent<br>That "+G("Matches You"),"Auto level grows with you, Newcomer to Grandmaster","auto"),
