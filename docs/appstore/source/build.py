@@ -1,8 +1,8 @@
-import os, subprocess
+import os, subprocess, sys
 R=os.path.abspath("raw")
 G=lambda s:f'<span class="g">{s}</span>'
 shots={
-"setA/01":("Your Personal<br>"+G("AI Chess Coach"),"Notes on every mistake, in your own games","an3"),
+"setA/01":("Your Personal 24/7<br>"+G("AI Chess Coach"),"Notes on every mistake, in your own games","an3"),
 "setA/02":("<span style=\"font-size:100px\">Every Game Reviewed,</span><br>"+G("Plain English"),"A coach&rsquo;s report after every game","report"),
 "setA/03":("See Your Mistakes,<br>"+G("Best Moves"),"Red is what you played. Green is better.","km2"),
 "setA/04":("An Opponent<br>That "+G("Matches You"),"Auto level grows with you, Newcomer to Grandmaster","auto"),
@@ -27,6 +27,7 @@ padding:22px;box-shadow:0 0 0 3px #3a3029,0 60px 140px rgba(0,0,0,.75),0 0 90px 
 .phone img{width:956px;height:2078px;border-radius:106px;display:block}
 """
 for out,(h,sub,img) in shots.items():
+    if len(sys.argv)>1 and out not in sys.argv[1:]: continue
     f=f"html/{out.replace('/','_')}.html"
     open(f,"w").write(f'<!doctype html><html><head><meta charset="utf-8"><style>{css}</style></head><body><div class="head"><h1 style="{'font-size:100px' if out=='setA/02' else ''}">{h}</h1><p>{sub}</p></div><div class="phone"><img src="file://{R}/{img}.png"></div></body></html>')
     subprocess.run(["/Applications/Google Chrome.app/Contents/MacOS/Google Chrome","--headless","--disable-gpu","--force-device-scale-factor=1",f"--screenshot={os.path.abspath(out)}.png","--window-size=1290,2796","--hide-scrollbars","--allow-file-access-from-files","file://"+os.path.abspath(f)],capture_output=True)
