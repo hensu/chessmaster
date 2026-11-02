@@ -256,9 +256,8 @@ final class GameViewModel {
                        normalizedResult(result) == "win" || games.count >= 3 {
                         Task { await NotificationPermission.requestFullIfNeeded() }
                     }
-                    if case .engine = session.config.opponent,
-                       normalizedResult(result) == "win", let container {
-                        ReviewPrompt.maybeRequest(trigger: "win", container: container)
+                    if normalizedResult(result) == "win", let container {
+                        ReviewPrompt.maybeRequest(trigger: isFriendGame ? "friend_win" : "win", container: container)
                     }
                 }
                 if let container { ReengagementNotifier.refresh(container: container) }

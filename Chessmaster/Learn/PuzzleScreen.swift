@@ -298,7 +298,11 @@ final class PuzzleViewModel {
                     ])
                 }
                 if let container {
-                    ReviewPrompt.puzzleSolved(firstTry: attempts == 0 && !usedHint, container: container)
+                    if daily != nil {
+                        ReviewPrompt.maybeRequest(trigger: "daily_puzzle", container: container)
+                    } else {
+                        ReviewPrompt.puzzleSolved(firstTry: attempts == 0 && !usedHint, container: container)
+                    }
                 }
             } else {
                 phase = .opponentThinking
