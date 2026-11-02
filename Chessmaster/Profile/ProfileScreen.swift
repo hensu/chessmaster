@@ -200,6 +200,12 @@ struct ProfileScreen: View {
             }
 
             Section("About") {
+                Link(destination: URL(string: "https://apps.apple.com/app/id6790178402?action=write-review")!) {
+                    Label("Rate Chess AI", systemImage: "star.fill")
+                }
+                .simultaneousGesture(TapGesture().onEnded {
+                    container.sync.track("rate_app_tapped", ["source": "profile"])
+                })
                 NavigationLink("Licenses & attributions") {
                     LicensesScreen()
                 }
