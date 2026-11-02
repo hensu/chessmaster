@@ -16,7 +16,13 @@ public struct PaywallScreen: View {
     let onPurchaseVerify: ((String) async -> Void)?
     /// Called when the player backs out of the App Store purchase sheet.
     let onPurchaseCancelled: (() -> Void)?
+    /// Closes the paywall when it isn't presented as a sheet (onboarding).
+    let onClose: (() -> Void)?
+    /// Hides the close button this long before fading it in (onboarding).
+    let closeDelay: Duration
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @State private var showClose = false
 
     @State private var products: [String: Product] = [:]
     @State private var trialEligible = false
@@ -34,12 +40,20 @@ public struct PaywallScreen: View {
         entitlements: EntitlementStore,
         appAccountToken: UUID? = nil,
         onPurchaseVerify: ((String) async -> Void)? = nil,
-        onPurchaseCancelled: (() -> Void)? = nil
+        onPurchaseCancelled: (() -> Void)? = nil,
+        onClose: (() -> Void)? = nil,
+        closeDelay: Duration = .zero
     ) {
         self.entitlements = entitlements
         self.appAccountToken = appAccountToken
         self.onPurchaseVerify = onPurchaseVerify
         self.onPurchaseCancelled = onPurchaseCancelled
+        self.onClose = onClose
+        self.closeDelay = closeDelay
+    }
+
+    private func close() {
+        if let onClose { onClose() } else { dismiss() }
     }
 
     private func productID(_ tier: Plan, annual: Bool) -> String {
@@ -57,7 +71,7 @@ public struct PaywallScreen: View {
         VStack(spacing: 0) {
             HStack {
                 Spacer()
-                Button { dismiss() } label: {
+                Button { close() } label: {
                     Image(systemName: "xmark")
                         .font(.subheadline.weight(.bold))
                         .foregroundStyle(.secondary)
@@ -66,6 +80,8 @@ public struct PaywallScreen: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Close")
+                .opacity(showClose ? 1 : 0)
+                .disabled(!showClose)
             }
             .padding(.horizontal, 16)
             .padding(.top, 14)
@@ -101,6 +117,12 @@ public struct PaywallScreen: View {
             purchaseBar
         }
         .task { await loadProducts() }
+        .task {
+            guard closeDelay > .zero else { showClose = true; return }
+            try? await Task.sleep(for: closeDelay)
+            if reduceMotion { showClose = true }
+            else { withAnimation(.easeIn(duration: 0.4)) { showClose = true } }
+        }
     }
 
     // MARK: - Toggle
@@ -271,7 +293,7 @@ public struct PaywallScreen: View {
                     if let jws = entitlements.latestTransactionJWS {
                         await onPurchaseVerify?(jws)
                     }
-                    dismiss()
+                    close()
                 } else {
                     onPurchaseCancelled?()
                 }
@@ -284,7 +306,7 @@ public struct PaywallScreen: View {
     private func restore() {
         Task { @MainActor in
             await entitlements.restore()
-            if entitlements.isPremium { dismiss() }
+            if entitlements.isPremium { close() }
         }
     }
 }

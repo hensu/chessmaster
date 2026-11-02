@@ -8,6 +8,9 @@ struct AppPaywall: View {
     /// Which surface raised the paywall ("profile_upgrade", "game_insights",
     /// "coaching", "training", "player_review") — funnel attribution.
     let source: String
+    /// Set when shown inline (onboarding) rather than as a sheet.
+    var onClose: (() -> Void)? = nil
+    var closeDelay: Duration = .zero
     @Environment(DependencyContainer.self) private var container
 
     var body: some View {
@@ -20,7 +23,9 @@ struct AppPaywall: View {
             },
             onPurchaseCancelled: {
                 container.sync.track("purchase_cancelled", ["source": source])
-            }
+            },
+            onClose: onClose,
+            closeDelay: closeDelay
         )
         .onAppear { container.sync.track("paywall_viewed", ["source": source]) }
         .trackScreen("Paywall")

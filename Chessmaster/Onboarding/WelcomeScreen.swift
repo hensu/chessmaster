@@ -128,8 +128,7 @@ struct WelcomeScreen: View {
             case .name:
                 NameScreen(source: "onboarding", onDone: afterName)
             case .paywall:
-                OnboardingPaywall(onFinish: onDone)
-                    .onAppear { container.sync.track("paywall_viewed", ["source": "onboarding"]) }
+                AppPaywall(source: "onboarding", onClose: onDone, closeDelay: .seconds(6))
             }
         }
         .preferredColorScheme(.light)   // Cal AI tone: quiz is always light
