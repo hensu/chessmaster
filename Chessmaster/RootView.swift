@@ -109,24 +109,28 @@ struct RootView: View {
         TabView(selection: $router.selectedTab) {
             NavigationStack(path: $router.playPath) {
                 HomeScreen()
+                    .upgradeCrown(source: "crown_play")
             }
             .tabItem { Label("Play", systemImage: "checkerboard.rectangle") }
             .tag(AppTab.play)
 
             NavigationStack(path: $router.learnPath) {
                 LearnScreen()
+                    .upgradeCrown(source: "crown_learn")
             }
             .tabItem { Label("Learn", systemImage: "puzzlepiece.extension") }
             .tag(AppTab.learn)
 
             NavigationStack(path: $router.historyPath) {
                 HistoryScreen()
+                    .upgradeCrown(source: "crown_history")
             }
             .tabItem { Label("History", systemImage: "clock.arrow.circlepath") }
             .tag(AppTab.history)
 
             NavigationStack(path: $router.profilePath) {
                 ProfileScreen()
+                    .upgradeCrown(source: "crown_profile")
             }
             .tabItem { Label("Profile", systemImage: "person.crop.circle") }
             .tag(AppTab.profile)
