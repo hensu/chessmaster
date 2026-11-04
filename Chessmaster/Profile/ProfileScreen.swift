@@ -8,6 +8,8 @@ import PersistenceKit
 
 struct ProfileScreen: View {
     @Environment(DependencyContainer.self) private var container
+    @Environment(\.openURL) private var openURL
+    private static let gold = Color(red: 0.961, green: 0.769, blue: 0.318)
     @State private var category: TimeControl.Category = .blitz
     @State private var pickedDefaultCategory = false
     @State private var history: [RatingHistoryRecord] = []
@@ -119,6 +121,7 @@ struct ProfileScreen: View {
                                 : "How can I improve? (Diamond)",
                             systemImage: "chart.line.uptrend.xyaxis"
                         )
+                        .foregroundStyle(.green)
                     }
                 }
             }
@@ -130,6 +133,32 @@ struct ProfileScreen: View {
                     statView(count: stats.losses, label: "Losses", color: .red)
                 }
                 .padding(.vertical, 4)
+            }
+
+            Section("Membership") {
+                switch container.entitlements.plan {
+                case .diamond:
+                    Label("Diamond — advanced AI coaching", systemImage: "crown.fill")
+                        .foregroundStyle(Self.gold)
+                case .platinum:
+                    Label("Platinum active", systemImage: "crown.fill")
+                        .foregroundStyle(.secondary)
+                    Button {
+                        paywallSource = "profile_upgrade"
+                        showPaywall = true
+                    } label: {
+                        Label("Upgrade to Diamond", systemImage: "crown.fill")
+                            .foregroundStyle(Self.gold)
+                    }
+                case .free:
+                    Button {
+                        paywallSource = "profile_upgrade"
+                        showPaywall = true
+                    } label: {
+                        Label("Upgrade — Platinum or Diamond", systemImage: "crown.fill")
+                            .foregroundStyle(Self.gold)
+                    }
+                }
             }
 
             Section("Game") {
@@ -175,37 +204,24 @@ struct ProfileScreen: View {
                 }
             }
 
-            Section("Membership") {
-                switch container.entitlements.plan {
-                case .diamond:
-                    Label("Diamond — advanced AI coaching", systemImage: "crown.fill")
-                        .foregroundStyle(.yellow)
-                case .platinum:
-                    Label("Platinum active", systemImage: "crown.fill")
-                        .foregroundStyle(.secondary)
-                    Button {
-                        paywallSource = "profile_upgrade"
-                        showPaywall = true
-                    } label: {
-                        Label("Upgrade to Diamond", systemImage: "crown")
-                    }
-                case .free:
-                    Button {
-                        paywallSource = "profile_upgrade"
-                        showPaywall = true
-                    } label: {
-                        Label("Upgrade — Platinum or Diamond", systemImage: "crown")
-                    }
-                }
-            }
-
             Section("About") {
-                Link(destination: URL(string: "https://apps.apple.com/app/id6790178402?action=write-review")!) {
-                    Label("Rate Chess AI", systemImage: "star.fill")
-                }
-                .simultaneousGesture(TapGesture().onEnded {
+                Button {
                     container.sync.track("rate_app_tapped", ["source": "profile"])
-                })
+                    openURL(URL(string: "https://apps.apple.com/app/id6790178402?action=write-review")!)
+                } label: {
+                    HStack {
+                        Label {
+                            Text("Rate Chess AI").foregroundStyle(.primary)
+                        } icon: {
+                            Image(systemName: "star.fill").foregroundStyle(Self.gold)
+                        }
+                        Spacer()
+                        Image(systemName: "arrow.up.right")
+                            .font(.footnote)
+                            .foregroundStyle(.tertiary)
+                    }
+                    .contentShape(Rectangle())
+                }
                 NavigationLink("Licenses & attributions") {
                     LicensesScreen()
                 }
