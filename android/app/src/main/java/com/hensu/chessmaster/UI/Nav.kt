@@ -24,11 +24,18 @@ import androidx.compose.ui.Modifier
  */
 class Navigator {
     internal val stack = mutableStateListOf<Entry>()
+    /** Entries by id, kept after a pop so the leaving screen can finish its exit animation. */
+    internal val all = mutableMapOf<Int, Entry>()
     internal class Entry(val id: Int, val content: @Composable () -> Unit)
     private var nextId = 1
 
     val depth: Int get() = stack.size
-    fun push(content: @Composable () -> Unit) { stack.add(Entry(nextId++, content)) }
+    fun push(content: @Composable () -> Unit) {
+        val entry = Entry(nextId++, content)
+        all.keys.retainAll(stack.map { it.id }.toSet())
+        all[entry.id] = entry
+        stack.add(entry)
+    }
     /** @Environment(\.dismiss): leaves the top screen. */
     fun pop() { if (stack.isNotEmpty()) stack.removeAt(stack.lastIndex) }
     fun popToRoot() { stack.clear() }
@@ -42,6 +49,8 @@ class Navigator {
 val LocalNav = staticCompositionLocalOf<Navigator> { error("No NavStack above this screen") }
 /** The enclosing NavStack's navigator, or null in a sheet/cover that has no NavStack. */
 val LocalNavOrNull = staticCompositionLocalOf<Navigator?> { null }
+/** True for a NavStack's root screen, false for pushed screens (and outside any NavStack). */
+val LocalIsNavRoot = staticCompositionLocalOf { false }
 
 /** NavigationStack { root }. */
 @Composable
@@ -61,8 +70,11 @@ fun NavStack(navigator: Navigator = remember { Navigator() }, root: @Composable 
         ) { id ->
             Box(Modifier.fillMaxSize()) {
                 holder.SaveableStateProvider(id) {
-                    val entry = navigator.stack.firstOrNull { it.id == id }
-                    if (id == 0 || entry == null) root() else entry.content()
+                    val entry = navigator.all[id]
+                    CompositionLocalProvider(LocalIsNavRoot provides (id == 0)) {
+                        // A popped screen stays composed while it slides away; it keeps its own content.
+                        if (id == 0) root() else entry?.content?.invoke()
+                    }
                 }
             }
         }

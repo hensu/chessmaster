@@ -81,39 +81,33 @@ fun rememberHaptics(): Haptics {
 fun reduceMotion(): Boolean =
     Settings.Global.getFloat(App.context.contentResolver, Settings.Global.ANIMATOR_DURATION_SCALE, 1f) == 0f
 
-/** @AppStorage("key") var flag = false: a remembered state that saves to Defaults.standard on every write. */
-@Composable
-fun appStorageBool(key: String, default: Boolean = false): MutableState<Boolean> = remember(key) {
-    object : MutableState<Boolean> {
-        private val inner = mutableStateOf(Defaults.standard.boolOrNull(key) ?: default)
-        override var value: Boolean
-            get() = inner.value
-            set(v) { inner.value = v; Defaults.standard.set(key, v) }
-        override fun component1() = value
-        override fun component2(): (Boolean) -> Unit = { value = it }
-    }
-}
+/**
+ * @AppStorage("key"): one shared state per key for the whole process, saved to Defaults.standard
+ * on every write, so two screens bound to the same key see each other's changes.
+ */
+private val appStorageStates = mutableMapOf<String, MutableState<*>>()
+
+@Suppress("UNCHECKED_CAST")
+private fun <T> appStorage(key: String, read: () -> T, write: (T) -> Unit): MutableState<T> =
+    appStorageStates.getOrPut(key) {
+        object : MutableState<T> {
+            private val inner = mutableStateOf(read())
+            override var value: T
+                get() = inner.value
+                set(v) { inner.value = v; write(v) }
+            override fun component1() = value
+            override fun component2(): (T) -> Unit = { value = it }
+        }
+    } as MutableState<T>
 
 @Composable
-fun appStorageString(key: String, default: String = ""): MutableState<String> = remember(key) {
-    object : MutableState<String> {
-        private val inner = mutableStateOf(Defaults.standard.string(key) ?: default)
-        override var value: String
-            get() = inner.value
-            set(v) { inner.value = v; Defaults.standard.set(key, v) }
-        override fun component1() = value
-        override fun component2(): (String) -> Unit = { value = it }
-    }
-}
+fun appStorageBool(key: String, default: Boolean = false): MutableState<Boolean> =
+    appStorage(key, { Defaults.standard.boolOrNull(key) ?: default }) { Defaults.standard.set(key, it) }
 
 @Composable
-fun appStorageInt(key: String, default: Int = 0): MutableState<Int> = remember(key) {
-    object : MutableState<Int> {
-        private val inner = mutableStateOf(Defaults.standard.intOrNull(key) ?: default)
-        override var value: Int
-            get() = inner.value
-            set(v) { inner.value = v; Defaults.standard.set(key, v) }
-        override fun component1() = value
-        override fun component2(): (Int) -> Unit = { value = it }
-    }
-}
+fun appStorageString(key: String, default: String = ""): MutableState<String> =
+    appStorage(key, { Defaults.standard.string(key) ?: default }) { Defaults.standard.set(key, it) }
+
+@Composable
+fun appStorageInt(key: String, default: Int = 0): MutableState<Int> =
+    appStorage(key, { Defaults.standard.intOrNull(key) ?: default }) { Defaults.standard.set(key, it) }

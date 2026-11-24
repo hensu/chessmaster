@@ -53,7 +53,9 @@ fun ScreenScaffold(
     content: @Composable () -> Unit,
 ) {
     val nav = LocalNavOrNull.current
-    val back = onBack ?: if (nav != null && nav.depth > 0) ({ nav.pop() }) else null
+    val isRoot = LocalIsNavRoot.current
+    val back = onBack ?: if (nav != null && !isRoot) ({ nav.pop() }) else null
+    val extras = if (isRoot) LocalToolbarExtras.current else null
     Column(
         modifier.fillMaxSize().background(background)
             .windowInsetsPadding(WindowInsets.statusBars).windowInsetsPadding(WindowInsets.navigationBars)
@@ -72,7 +74,10 @@ fun ScreenScaffold(
                 Text(title, style = Sys.headline, color = Sys.primary, maxLines = 1, overflow = TextOverflow.Ellipsis,
                      modifier = Modifier.weight(1f).padding(horizontal = 8.dp))
             } else Spacer(Modifier.weight(1f))
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp), content = trailing)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                trailing()
+                extras?.invoke()
+            }
         }
         if (large) {
             Text(title, style = Sys.largeTitle.copy(fontWeight = FontWeight.Bold), color = Sys.primary,
@@ -81,6 +86,12 @@ fun ScreenScaffold(
         Box(Modifier.fillMaxWidth().weight(1f)) { content() }
     }
 }
+
+/**
+ * Extra trailing toolbar items a parent adds to the ROOT screen of a NavStack (iOS: a view
+ * modifier that appends a ToolbarItem, like `.upgradeCrown(source:)` on each tab root).
+ */
+val LocalToolbarExtras = androidx.compose.runtime.compositionLocalOf<(@Composable () -> Unit)?> { null }
 
 /** A toolbar text button ("Done", "Cancel", "Close"). */
 @Composable

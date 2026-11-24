@@ -5,6 +5,13 @@
     <!-- Local notifications: streak savers, come-back nudges, "your AI coach is ready". -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <queries>
+        <!-- Analysis/CoachVoice.kt: the text-to-speech engine that reads the coach's notes. -->
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
+
     <application
         android:name=".ChessAIApp"
         android:allowBackup="false"
