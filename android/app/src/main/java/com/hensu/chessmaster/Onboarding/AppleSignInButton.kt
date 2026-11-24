@@ -29,8 +29,18 @@ import kotlinx.coroutines.launch
 /** Sign in with Apple. iOS uses the native sheet; Android opens Apple's web sign-in in a
  *  Custom Tab (Supabase OAuth) and the callback becomes a Supabase session. The button keeps
  *  Apple's look: black in light mode, white in dark, logo + "Continue with Apple". */
+object AppleSignIn {
+    /**
+     * Off until the Supabase project has Apple's web credentials (Services ID + secret): today
+     * `/auth/v1/authorize?provider=apple` answers "missing OAuth secret", so the button would
+     * only fail. While off, the button draws nothing and takes no space.
+     */
+    const val available = false
+}
+
 @Composable
 fun AppleSignInButton(sync: SyncService, onSignedIn: () -> Unit, modifier: Modifier = Modifier) {
+    if (!AppleSignIn.available) return
     val scope = rememberCoroutineScope()
     // .signInWithAppleButtonStyle(colorScheme == .dark ? .white : .black)
     val background = if (Sys.dark) Color.White else Color.Black
