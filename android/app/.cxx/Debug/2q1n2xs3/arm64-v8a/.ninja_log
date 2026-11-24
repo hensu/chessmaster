@@ -1,0 +1,27 @@
+# ninja log v5
+1	742	1795563815176010143	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/stockfish/memory.cpp.o	b50be08fd03bdc15
+2	804	1795563815237222695	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/stockfish/movepick.cpp.o	89bea70ea226429c
+1	855	1795563815277758133	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/stockfish/bitboard.cpp.o	7fb632ffbdfe1057
+2	875	1795563815307072850	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/stockfish/nnue/features/half_ka_v2_hm.cpp.o	1241d1144ebcc554
+1	1065	1795563815496807322	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/stockfish/misc.cpp.o	1a0dca56de2834c4
+2	1241	1795563815672902038	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/stockfish/movegen.cpp.o	184f229b50412a32
+2	1497	1795563815920844029	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/stockfish/nnue/nnue_accumulator.cpp.o	5d0acc29fb200b58
+1	1514	1795563815945269299	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/stockfish/evaluate.cpp.o	47d91b859db559bd
+0	1541	1795563815972000481	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/stockfish/nnue/features/full_threats.cpp.o	678cf8feb6b04b87
+875	1812	1795563816243045697	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/stockfish/score.cpp.o	8d58edd5aa622219
+744	1843	1795563816275608988	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/stockfish/nnue/nnue_misc.cpp.o	c1807d648053cde8
+1843	2066	1795563816500580990	CMakeFiles/chessai_engine.dir/engine_jni.cpp.o	2208dd7609094e88
+1541	2139	1795563816571623598	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/stockfish/tune.cpp.o	3cb1e8409ffc693c
+2	2203	1795563816632682232	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/stockfish/nnue/network.cpp.o	1621c8647bec5322
+1	2259	1795563816682709144	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/stockfish/benchmark.cpp.o	40e0bda1d0edff15
+1497	2369	1795563816799636134	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/stockfish/timeman.cpp.o	72c95e4b54145668
+1514	2448	1795563816880044926	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/stockfish/tt.cpp.o	58ef7368d2d43d25
+855	2516	1795563816943733428	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/stockfish/position.cpp.o	ce331e4affd32a0a
+2066	2651	1795563817083593356	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/stockfish/ucioption.cpp.o	8a2b2e3f80397ee4
+1241	3061	1795563817490457545	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/stockfish/thread.cpp.o	2e26993cb8be6da7
+1	3078	1795563817502494680	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/stockfish/engine.cpp.o	b71a82411c4b80fc
+2139	3182	1795563817614771428	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/CMStockfishBridge.cpp.o	c3c3b2892c4d1889
+1812	3306	1795563817735245697	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/stockfish/uci.cpp.o	1bebdaedee1e0a80
+804	3414	1795563817844870786	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/stockfish/syzygy/tbprobe.cpp.o	b367b3e303368e2
+1065	3734	1795563818161997789	CMakeFiles/chessai_engine.dir/Users/jitbiswal/dev/chessmaster/Packages/EngineKit/Sources/StockfishCpp/stockfish/search.cpp.o	f15d8814c41ab2e8
+3734	3789	1795563818212018949	/Users/jitbiswal/dev/chessmaster/android/app/build/intermediates/cxx/Debug/2q1n2xs3/obj/arm64-v8a/libchessai_engine.so	9767a00c3681cd6a

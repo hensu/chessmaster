@@ -15,7 +15,7 @@ android {
         minSdk = 26
         targetSdk = 36
         // Kept in step with the iOS app (project.yml MARKETING_VERSION); versionCode is Android's own.
-        versionCode = 1
+        versionCode = 2
         versionName = "1.0.8"
 
         // Same Supabase project and GA4 property as the iOS app (project.yml). The anon key is
@@ -26,7 +26,8 @@ android {
         buildConfigField("String", "GA_API_SECRET", "\"0IYnQrAISbyVEGewkpAxqg\"")
 
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
-        externalNativeBuild { cmake { arguments += listOf("-DANDROID_STL=c++_static") } }
+        // 16 KB memory pages (required by Google Play; NDK r27 needs the flag, r28+ does it by default).
+        externalNativeBuild { cmake { arguments += listOf("-DANDROID_STL=c++_static", "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON") } }
     }
 
     // Stockfish: the same sources the iOS EngineKit package compiles (never copied).
