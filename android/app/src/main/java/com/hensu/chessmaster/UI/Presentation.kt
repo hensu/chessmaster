@@ -41,7 +41,10 @@ fun Sheet(
         sheetState = state,
         containerColor = Sys.groupedBackground,
         properties = androidx.compose.material3.ModalBottomSheetProperties(shouldDismissOnBackPress = dismissable),
-    ) { content() }
+    ) {
+        // A sheet is its own presentation: no tab-root toolbar items, not a NavStack root.
+        androidx.compose.runtime.CompositionLocalProvider(LocalToolbarExtras provides null, LocalIsNavRoot provides false) { content() }
+    }
 }
 
 /** .fullScreenCover(isPresented:) { content }: covers the whole screen; back closes it when `dismissable`. */
@@ -52,7 +55,9 @@ fun FullScreenCover(onDismiss: () -> Unit, dismissable: Boolean = false, content
         properties = DialogProperties(usePlatformDefaultWidth = false, dismissOnBackPress = dismissable,
                                       dismissOnClickOutside = false, decorFitsSystemWindows = false),
     ) {
-        Box(Modifier.fillMaxSize().background(Sys.groupedBackground)) { content() }
+        Box(Modifier.fillMaxSize().background(Sys.groupedBackground)) {
+            androidx.compose.runtime.CompositionLocalProvider(LocalToolbarExtras provides null, LocalIsNavRoot provides false) { content() }
+        }
     }
 }
 
