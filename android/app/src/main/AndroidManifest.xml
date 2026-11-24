@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Local notifications: streak savers, come-back nudges, "your AI coach is ready". -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <application
+        android:name=".ChessAIApp"
+        android:allowBackup="false"
+        android:icon="@mipmap/ic_launcher"
+        android:label="Chess AI"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.ChessAI">
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:launchMode="singleTask"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboardHidden|uiMode"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+            <!-- chessmaster://play?g=CODE (the invite page's "open" button) and the Supabase OAuth callback. -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="chessmaster" />
+            </intent-filter>
+            <!-- Friend-game invite links: https://getchessai.com/play/?g=CODE (the site serves .well-known/assetlinks.json). -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="getchessai.com" android:pathPrefix="/play" />
+            </intent-filter>
+        </activity>
+
+        <!-- Core/LocalNotifications.kt: posts a scheduled local notification. -->
+        <receiver android:name=".LocalNotificationReceiver" android:exported="false" />
+
+        <!-- Core/Platform.kt shareImage: hands the share-card PNG to other apps. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.hensu.chessmaster.files"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data android:name="android.support.FILE_PROVIDER_PATHS" android:resource="@xml/file_paths" />
+        </provider>
+    </application>
+</manifest>
