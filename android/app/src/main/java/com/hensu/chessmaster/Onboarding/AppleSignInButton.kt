@@ -31,11 +31,12 @@ import kotlinx.coroutines.launch
  *  Apple's look: black in light mode, white in dark, logo + "Continue with Apple". */
 object AppleSignIn {
     /**
-     * Off until the Supabase project has Apple's web credentials (Services ID + secret): today
-     * `/auth/v1/authorize?provider=apple` answers "missing OAuth secret", so the button would
-     * only fail. While off, the button draws nothing and takes no space.
+     * On since the Supabase Apple provider has web credentials (Services ID
+     * com.hensu.chessmaster.signin + a client secret that expires every 6 months:
+     * scripts/apple_signin_secret.py --apply). If the secret lapses, sign-in fails at
+     * Supabase's callback; set this false to hide the button (it then takes no space).
      */
-    const val available = false
+    const val available = true
 }
 
 @Composable
