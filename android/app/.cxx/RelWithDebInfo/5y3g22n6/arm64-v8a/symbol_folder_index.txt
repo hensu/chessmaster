@@ -1,1 +1,0 @@
-/Users/jitbiswal/dev/chessmaster/android/app/build/intermediates/cxx/RelWithDebInfo/5y3g22n6/obj/arm64-v8a

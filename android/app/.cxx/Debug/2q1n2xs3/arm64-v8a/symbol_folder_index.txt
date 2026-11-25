@@ -1,1 +1,0 @@
-/Users/jitbiswal/dev/chessmaster/android/app/build/intermediates/cxx/Debug/2q1n2xs3/obj/arm64-v8a
