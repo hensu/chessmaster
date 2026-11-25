@@ -68,6 +68,13 @@ object LocalNotifications {
         alarms.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, fireAt.toEpochMilli(), pending)
     }
 
+    /** Shows a notification now (a server push that just arrived). */
+    fun deliver(identifier: String, title: String, body: String, userInfo: Map<String, String> = emptyMap()) {
+        val intent = Intent().putExtra("identifier", identifier).putExtra("title", title).putExtra("body", body)
+        userInfo.forEach { (k, v) -> intent.putExtra("userInfo.$k", v) }
+        post(App.context, intent)
+    }
+
     /** removePendingNotificationRequests(withIdentifiers:) + removeDeliveredNotifications. */
     fun cancel(identifiers: List<String>) {
         val context = App.context

@@ -225,7 +225,10 @@ suspend fun SyncService.unredeemedReferralRewards(): List<ReferralReward> {
     if (client == null || !isSignedIn) return emptyList()
     val since = Instant.now().minusSeconds(ReferralReward.claimWindow.toLong()).truncatedTo(ChronoUnit.SECONDS)
     return try {
+        // The reward is assigned as an App Store code; swap it for a Google Play one.
+        client.rpc("referral_reward_use_android", buildJsonObject { })
         val text = client.select("referral_codes", "code, role, assigned_at", listOf(
+            "platform" to "eq.android",
             "redeemed_at" to "is.null",
             "assigned_at" to "gte.$since",
         ))

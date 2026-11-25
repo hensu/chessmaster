@@ -49,6 +49,13 @@
         <!-- Core/LocalNotifications.kt: posts a scheduled local notification. -->
         <receiver android:name=".LocalNotificationReceiver" android:exported="false" />
 
+        <!-- Notifications/PushRegistration.kt: server pushes (Firebase Cloud Messaging). -->
+        <service android:name=".PushService" android:exported="false">
+            <intent-filter>
+                <action android:name="com.google.firebase.MESSAGING_EVENT" />
+            </intent-filter>
+        </service>
+
         <!-- Core/Platform.kt shareImage: hands the share-card PNG to other apps. -->
         <provider
             android:name="androidx.core.content.FileProvider"

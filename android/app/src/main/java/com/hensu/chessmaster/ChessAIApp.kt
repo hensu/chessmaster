@@ -8,6 +8,7 @@ class ChessAIApp : Application() {
     override fun onCreate() {
         super.onCreate()
         App.context = this
+        Push.configure(this)
     }
 }
 

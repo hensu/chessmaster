@@ -139,8 +139,7 @@ class SyncService(
 
     /** True once this device's push token is stored server-side, so the
      *  backend push service can reach this user — the client then leaves
-     *  re-engagement to the server instead of scheduling local notifications.
-     *  (Android has no push yet: nothing registers a token, so this stays false.) */
+     *  re-engagement to the server instead of scheduling local notifications. */
     var hasRemoteToken by mutableStateOf(false)
         private set
     private var deviceTokenHex: String? = null
@@ -510,21 +509,34 @@ class SyncService(
 
     /** Registers a purchased subscription server-side (best-effort; the
      *  store's server notifications are the durable path, this is the instant unlock). */
-    suspend fun verifySubscription(productID: String, purchaseToken: String) {
+    suspend fun verifySubscription(productID: String, purchaseToken: String): VerifiedSubscription? {
         if (!isSignedIn) signInAnonymously()
-        if (!isSignedIn) return
-        try {
-            invokeFunctionJSON("verify-subscription", buildJsonObject {
+        if (!isSignedIn) return null
+        return try {
+            val text = invokeFunctionJSON("verify-subscription", buildJsonObject {
                 put("platform", "android")
                 put("product_id", productID)
                 put("purchase_token", purchaseToken)
             }.toString())
+            val body = AppJson.parseToJsonElement(text) as? JsonObject
+            val entitlement = body?.get("entitlement") as? JsonObject
+            val isTrial = (entitlement?.get("is_trial") as? JsonPrimitive)?.content == "true"
+            val expires = (entitlement?.get("expires_at") as? JsonPrimitive)?.content
+            VerifiedSubscription(
+                offerCode = (body?.get("offer_code") as? JsonPrimitive)?.content == "true",
+                trialEndsAt = if (isTrial) expires?.let { runCatching { java.time.OffsetDateTime.parse(it).toInstant() }.getOrNull() } else null,
+            )
         } catch (e: CancellationException) {
             throw e
         } catch (_: Exception) {
             // Test purchases may not verify; real purchases retry on next launch.
+            null
         }
     }
+
+    /** What Google Play told the backend about a purchase that the billing library
+     *  does not tell the app: whether it came from a promo code, and its trial end. */
+    data class VerifiedSubscription(val offerCode: Boolean, val trialEndsAt: Instant?)
 
     /** The player's name as friends see it (auth `full_name`/`name` metadata;
      *  Google fills it, Apple only on first authorization, email never). */

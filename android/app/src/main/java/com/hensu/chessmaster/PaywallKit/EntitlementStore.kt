@@ -119,10 +119,10 @@ class EntitlementStore {
         private set
 
     /**
-     * True once a current subscription came from an App Store offer code
+     * True once a current subscription came from a Google Play promo code
      * (friend-game free month): the app then retires its reward card.
-     * Google Play does not tell the client how a subscription was bought, so
-     * this stays false on Android.
+     * The billing library does not say how a subscription was bought, so
+     * this comes from the backend's verification (`serverFacts`).
      */
     var redeemedOfferCode: Boolean by mutableStateOf(false)
         private set
@@ -132,6 +132,8 @@ class EntitlementStore {
     /** The billing sheet that is on screen, waiting for Play's result. */
     private var pendingFlow: CompletableDeferred<Pair<BillingResult, List<Purchase>>>? = null
     private var productCache: Map<String, ProductDetails> = emptyMap()
+    /** What the backend learned from Google about each owned purchase token. */
+    private val serverFacts = mutableMapOf<String, SyncService.VerifiedSubscription>()
     /** "user|token" pairs already sent to the backend this launch. */
     private val verified = mutableSetOf<String>()
 
@@ -210,8 +212,8 @@ class EntitlementStore {
                 trialEnd = trialEnd(purchase)
             }
         }
-        trialEndsAt = trialEnd
-        redeemedOfferCode = false
+        trialEndsAt = trialEnd ?: owned.firstNotNullOfOrNull { serverFacts[it.purchaseToken]?.trialEndsAt }
+        redeemedOfferCode = owned.any { serverFacts[it.purchaseToken]?.offerCode == true }
         apply(best)
         for (purchase in owned) registerWithBackend(purchase)
     }
@@ -241,7 +243,12 @@ class EntitlementStore {
         val sync = DependencyContainer.shared.sync
         if (!sync.isSignedIn) return
         if (!verified.add("${sync.userID}|${purchase.purchaseToken}")) return
-        scope.launch { sync.verifySubscription(id, purchase.purchaseToken) }
+        scope.launch {
+            val facts = sync.verifySubscription(id, purchase.purchaseToken) ?: return@launch
+            serverFacts[purchase.purchaseToken] = facts
+            if (facts.offerCode) redeemedOfferCode = true
+            if (trialEndsAt == null && facts.trialEndsAt?.isAfter(Instant.now()) == true) trialEndsAt = facts.trialEndsAt
+        }
     }
 
     private suspend fun acknowledge(purchase: Purchase) {

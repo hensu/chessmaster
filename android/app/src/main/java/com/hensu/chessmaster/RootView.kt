@@ -42,6 +42,7 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 
 @Composable
@@ -188,9 +189,19 @@ fun RootView() {
         // Streak reminders stay accurate even if the app wasn't opened
         // via a game (e.g. reinstall, day change).
         StreakNotifier.refresh(runCatching { container.games.recentGames() }.getOrNull() ?: emptyList())
+        // Forward the push token to the backend, and register signed-in
+        // users so friend-game and re-engagement pushes can reach them.
+        PushAppDelegate.onToken = { token ->
+            MainScope().launch {
+                container.sync.registerDeviceToken(
+                    token, Push.environment,
+                    java.util.TimeZone.getDefault().id, java.util.Locale.getDefault().toString())
+            }
+        }
+        Push.registerIfSignedIn(container.sync)
         // (Re)arm re-engagement nudges — a launch means the user is back, so
         // the cascade resets from now. Notification taps are routed from
-        // ChessmasterApp.onOpenURL; there is no push token on Android yet.
+        // ChessmasterApp.onOpenURL.
         ReengagementNotifier.refresh(container)
         // UI tests: establish a session without the sign-in UI.
         if (App.arguments.contains("--uitest-signin-anon") && !container.sync.isSignedIn) {
@@ -217,6 +228,7 @@ fun RootView() {
         // Signed up / in to accept a friend's invite.
         if (container.pendingInviteCode != null) container.sync.track("friend_signup_completed")
         handleInvite()
+        Push.registerIfSignedIn(container.sync)   // get a push token for the new session
         container.entitlements.refresh()
     }
 

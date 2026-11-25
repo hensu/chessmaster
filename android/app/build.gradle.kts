@@ -15,13 +15,19 @@ android {
         minSdk = 26
         targetSdk = 36
         // Kept in step with the iOS app (project.yml MARKETING_VERSION); versionCode is Android's own.
-        versionCode = 3
-        versionName = "1.0.8"
+        versionCode = 4
+        versionName = "1.0.9"
 
         // Same Supabase project and GA4 property as the iOS app (project.yml). The anon key is
         // the public client key; row-level security protects the data.
         buildConfigField("String", "SUPABASE_URL", "\"https://ucpaqfjmicxfygzhquqo.supabase.co\"")
         buildConfigField("String", "SUPABASE_ANON_KEY", "\"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVjcGFxZmptaWN4ZnlnemhxdXFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM4MzM4MTgsImV4cCI6MjA5OTQwOTgxOH0.2NYMHRdeqZk_vVAQX2DFb1CUxBL9JS1rpFZYDlR-G58\"")
+        // Firebase project "Chess AI" (chess-ai-114db): push only. Public client identifiers,
+        // set in code (Notifications/PushRegistration.kt) instead of a google-services.json.
+        buildConfigField("String", "FIREBASE_APP_ID", "\"1:976222968053:android:b5f1bc83f968be71248dbc\"")
+        buildConfigField("String", "FIREBASE_API_KEY", "\"AIzaSyDmCSDwrqYLsAK3L-by_wFjHB8D-K03DA0\"")
+        buildConfigField("String", "FIREBASE_PROJECT_ID", "\"chess-ai-114db\"")
+        buildConfigField("String", "FIREBASE_SENDER_ID", "\"976222968053\"")
         buildConfigField("String", "GA_MEASUREMENT_ID", "\"G-8JG1S0FTK3\"")
         buildConfigField("String", "GA_API_SECRET", "\"0IYnQrAISbyVEGewkpAxqg\"")
 
@@ -108,6 +114,9 @@ dependencies {
 
     // Plans (Google Play Billing) and the in-app review prompt.
     implementation("com.android.billingclient:billing-ktx:8.0.0")
+    // Server push (friend challenges, re-engagement): Firebase Cloud Messaging.
+    implementation(platform("com.google.firebase:firebase-bom:33.13.0"))
+    implementation("com.google.firebase:firebase-messaging")
     implementation("com.google.android.play:review-ktx:2.0.2")
 
     testImplementation("junit:junit:4.13.2")
