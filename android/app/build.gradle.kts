@@ -15,8 +15,8 @@ android {
         minSdk = 26
         targetSdk = 36
         // Kept in step with the iOS app (project.yml MARKETING_VERSION); versionCode is Android's own.
-        versionCode = 5
-        versionName = "1.0.9"
+        versionCode = 6
+        versionName = "1.0.10"
 
         // Same Supabase project and GA4 property as the iOS app (project.yml). The anon key is
         // the public client key; row-level security protects the data.

@@ -3,6 +3,7 @@
 
   scripts/play_subscriptions.py            # create what is missing, activate base plans and trial offers
   scripts/play_subscriptions.py --list     # show what exists
+  scripts/play_subscriptions.py --variant b diamond.yearly=59.99 ...   # price-test products `<id>.b`
 
 Each subscription has one base plan (`monthly` or `yearly`, auto-renewing) and an offer
 `free-trial` (1 week free, new customers who never had any subscription in the app).
@@ -15,7 +16,7 @@ import jwt
 PACKAGE = "com.hensu.chessmaster"
 KEY = os.path.expanduser("~/.config/chessai/play-service-account.json")
 API = f"https://androidpublisher.googleapis.com/androidpublisher/v3/applications/{PACKAGE}"
-REGIONS = "2022/02"
+REGIONS = "2026/01"
 
 PRODUCTS = [
     ("com.chessmaster.premium.monthly", "monthly", "P1M", 7, 990000000, "Platinum Monthly",
@@ -64,7 +65,20 @@ def main():
                 print("   offers", [(o["offerId"], o.get("state")) for o in offers.get("subscriptionOffers", [])])
         return
 
-    for pid, plan, period, units, nanos, title, benefit in PRODUCTS:
+    products = PRODUCTS
+    if "--variant" in sys.argv:
+        # Price-test products: `<base id>.<suffix>` at a new US price, e.g.
+        #   --variant b diamond.yearly=59.99 diamond.monthly=9.99 premium.yearly=39.99 premium.monthly=5.99
+        i = sys.argv.index("--variant")
+        suffix, prices = sys.argv[i + 1], dict(a.split("=") for a in sys.argv[i + 2:] if "=" in a)
+        products = []
+        for pid, plan, period, _, _, title, benefit in PRODUCTS:
+            short = pid.removeprefix("com.chessmaster.")
+            if short in prices:
+                units, cents = prices[short].split(".")
+                products.append((f"{pid}.{suffix}", plan, period, int(units), int(cents) * 10_000_000,
+                                 f"{title} {suffix.upper()}", benefit))
+    for pid, plan, period, units, nanos, title, benefit in products:
         usd = {"currencyCode": "USD", "units": str(units), "nanos": nanos}
         existing = call(tok, "GET", f"{API}/subscriptions/{pid}", ok404=True)
         if existing is None:
