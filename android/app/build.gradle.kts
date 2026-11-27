@@ -15,7 +15,7 @@ android {
         minSdk = 26
         targetSdk = 36
         // Kept in step with the iOS app (project.yml MARKETING_VERSION); versionCode is Android's own.
-        versionCode = 7
+        versionCode = 8
         versionName = "1.0.10"
 
         // Same Supabase project and GA4 property as the iOS app (project.yml). The anon key is
@@ -28,10 +28,10 @@ android {
         buildConfigField("String", "FIREBASE_API_KEY", "\"AIzaSyDmCSDwrqYLsAK3L-by_wFjHB8D-K03DA0\"")
         buildConfigField("String", "FIREBASE_PROJECT_ID", "\"chess-ai-114db\"")
         buildConfigField("String", "FIREBASE_SENDER_ID", "\"976222968053\"")
-        // Same GA4 property as iOS (545204781), own data stream "Chess AI Android" so reports
-        // can be split by stream. The Measurement Protocol secret is a public client value.
-        buildConfigField("String", "GA_MEASUREMENT_ID", "\"G-MWYEE5LYV8\"")
-        buildConfigField("String", "GA_API_SECRET", "\"QjZnHDCNR6uGJA2cJZygQg\"")
+        // Own GA4 property "ChessAI-Android" (566070242, account ChessAI), web data stream
+        // "Chess AI Android". The Measurement Protocol secret is a public client value.
+        buildConfigField("String", "GA_MEASUREMENT_ID", "\"G-GKHZS1YCCP\"")
+        buildConfigField("String", "GA_API_SECRET", "\"uuyW_zVXT82ISdynS0Ct-Q\"")
 
         ndk { abiFilters += listOf("arm64-v8a", "x86_64") }
         // 16 KB memory pages (required by Google Play; NDK r27 needs the flag, r28+ does it by default).
