@@ -16,9 +16,11 @@ public enum Plan: String, Sendable, Comparable {
 
     public static func < (lhs: Plan, rhs: Plan) -> Bool { lhs.rank < rhs.rank }
 
+    /// Matches by prefix, so a price-test product (`<base id>.<suffix>`,
+    /// see `EntitlementStore.productID`) is the same plan as its base.
     public static func plan(forProductID id: String) -> Plan {
-        if EntitlementStore.diamondIDs.contains(id) { return .diamond }
-        if EntitlementStore.platinumIDs.contains(id) { return .platinum }
+        if EntitlementStore.diamondIDs.contains(where: { id == $0 || id.hasPrefix($0 + ".") }) { return .diamond }
+        if EntitlementStore.platinumIDs.contains(where: { id == $0 || id.hasPrefix($0 + ".") }) { return .platinum }
         return .free
     }
 }
@@ -34,6 +36,23 @@ public final class EntitlementStore {
         "com.chessmaster.diamond.monthly", "com.chessmaster.diamond.yearly",
     ]
     public nonisolated static let productIDs = diamondIDs + platinumIDs
+
+    /// The base product for a tier and billing period.
+    public nonisolated static func baseProductID(_ tier: Plan, annual: Bool) -> String {
+        switch tier {
+        case .diamond: annual ? "com.chessmaster.diamond.yearly" : "com.chessmaster.diamond.monthly"
+        default:       annual ? "com.chessmaster.premium.yearly" : "com.chessmaster.premium.monthly"
+        }
+    }
+
+    /// A price-test variant of a base product: the same id with the
+    /// variant's suffix appended (`…diamond.yearly.b`). The suffix comes
+    /// from the server (app_config `price_test`), so a new price needs a
+    /// new store product but no new build.
+    public nonisolated static func productID(_ base: String, variant: String?) -> String {
+        guard let variant, !variant.isEmpty else { return base }
+        return "\(base).\(variant)"
+    }
 
     /// The active tier. `isPremium` means "any paid plan".
     public private(set) var plan: Plan = .free
@@ -132,7 +151,7 @@ public final class EntitlementStore {
 
     private func handle(_ update: VerificationResult<Transaction>) async {
         guard case .verified(let transaction) = update else { return }
-        if Self.productIDs.contains(transaction.productID) {
+        if Plan.plan(forProductID: transaction.productID) != .free {
             latestTransactionJWS = update.jwsRepresentation
             await transaction.finish()
             await refresh()

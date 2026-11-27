@@ -98,10 +98,6 @@ private val paywallCrownGold = rgb(0.961, 0.769, 0.318)
 private const val paywallTermsURL = "https://getchessai.com/terms.html"
 private const val paywallPrivacyURL = "https://getchessai.com/privacy.html"
 
-private fun paywallProductID(tier: Plan, annual: Boolean): String = when (tier) {
-    Plan.diamond -> if (annual) "com.chessmaster.diamond.yearly" else "com.chessmaster.diamond.monthly"
-    else -> if (annual) "com.chessmaster.premium.yearly" else "com.chessmaster.premium.monthly"
-}
 
 /** `(price / 12).formatted(priceFormatStyle)`: the yearly price per month, in the product's currency. */
 private fun paywallMonthlyEquivalent(product: ProductDetails): String {
@@ -127,6 +123,8 @@ private fun paywallMonthlyEquivalent(product: ProductDetails): String {
 fun PaywallScreen(
     entitlements: EntitlementStore,
     appAccountToken: UUID? = null,
+    /** Price-test product suffix for this install (null = today's prices). */
+    priceVariant: String? = null,
     onPurchaseVerify: (suspend (String, String) -> Unit)? = null,
     onPurchaseCancelled: (() -> Unit)? = null,
     onClose: (() -> Unit)? = null,
@@ -151,7 +149,14 @@ fun PaywallScreen(
         else if (backOwner !is Activity) backOwner?.onBackPressedDispatcher?.onBackPressed()
     }
 
-    val selectedProduct = products[paywallProductID(tier, isAnnual)]
+    /** The product to sell for a tier: this install's price-test variant
+     *  when the store has it, else the base product (a variant that isn't
+     *  live yet, or was removed, must never leave the sheet empty). */
+    fun product(tier: Plan, annual: Boolean): ProductDetails? {
+        val base = EntitlementStore.baseProductID(tier, annual)
+        return products[EntitlementStore.productID(base, priceVariant)] ?: products[base]
+    }
+    val selectedProduct = product(tier, isAnnual)
     val hasTrial = trialEligible && selectedProduct?.freeTrialOffer != null
 
     // MARK: - Actions
@@ -159,7 +164,9 @@ fun PaywallScreen(
     suspend fun loadProducts() {
         if (products.isNotEmpty()) return
         val loaded = try {
-            entitlements.products(EntitlementStore.productIDs)
+            entitlements.products(
+                (EntitlementStore.productIDs +
+                    EntitlementStore.productIDs.map { EntitlementStore.productID(it, priceVariant) }).distinct())
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -256,7 +263,7 @@ fun PaywallScreen(
             Text("Upgrade your coach", style = Sys.title.bold(), color = Sys.primary)
             PaywallPeriodToggle(isAnnual) { isAnnual = it }
             PaywallTierCard(
-                selected = tier == Plan.diamond, product = products[paywallProductID(Plan.diamond, isAnnual)],
+                selected = tier == Plan.diamond, product = product(Plan.diamond, isAnnual),
                 isAnnual = isAnnual, title = "Diamond", badge = "MOST POPULAR",
                 features = listOf(
                     "Every review by our most advanced AI",
@@ -266,7 +273,7 @@ fun PaywallScreen(
                 modifier = Modifier.padding(top = 6.dp),
             ) { tier = Plan.diamond }
             PaywallTierCard(
-                selected = tier == Plan.platinum, product = products[paywallProductID(Plan.platinum, isAnnual)],
+                selected = tier == Plan.platinum, product = product(Plan.platinum, isAnnual),
                 isAnnual = isAnnual, title = "Platinum", badge = null,
                 features = listOf(
                     "Unlimited AI game reviews",

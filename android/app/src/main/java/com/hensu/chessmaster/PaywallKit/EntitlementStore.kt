@@ -42,9 +42,12 @@ enum class Plan(val rawValue: String) {
     companion object {
         fun fromRaw(raw: String): Plan? = entries.firstOrNull { it.rawValue == raw }
 
+        /** Matches by prefix, so a price-test product (`<base id>.<suffix>`,
+         *  see `EntitlementStore.productID`) is the same plan as its base. */
         fun plan(forProductID: String): Plan {
-            if (EntitlementStore.diamondIDs.contains(forProductID)) return diamond
-            if (EntitlementStore.platinumIDs.contains(forProductID)) return platinum
+            fun matches(ids: List<String>) = ids.any { forProductID == it || forProductID.startsWith("$it.") }
+            if (matches(EntitlementStore.diamondIDs)) return diamond
+            if (matches(EntitlementStore.platinumIDs)) return platinum
             return free
         }
     }
@@ -93,6 +96,19 @@ class EntitlementStore {
             "com.chessmaster.diamond.monthly", "com.chessmaster.diamond.yearly",
         )
         val productIDs = diamondIDs + platinumIDs
+
+        /** The base product for a tier and billing period. */
+        fun baseProductID(tier: Plan, annual: Boolean): String = when (tier) {
+            Plan.diamond -> if (annual) "com.chessmaster.diamond.yearly" else "com.chessmaster.diamond.monthly"
+            else -> if (annual) "com.chessmaster.premium.yearly" else "com.chessmaster.premium.monthly"
+        }
+
+        /** A price-test variant of a base product: the same id with the
+         *  variant's suffix appended (`…diamond.yearly.b`). The suffix comes
+         *  from the server (app_config `price_test`), so a new price needs a
+         *  new store product but no new build. */
+        fun productID(base: String, variant: String?): String =
+            if (variant.isNullOrEmpty()) base else "$base.$variant"
 
         /** The Play offer id of the 7-day free trial on each base plan. */
         const val trialOfferID = "free-trial"
@@ -193,7 +209,7 @@ class EntitlementStore {
     }
 
     private fun productID(purchase: Purchase): String? =
-        purchase.products.firstOrNull { productIDs.contains(it) }
+        purchase.products.firstOrNull { Plan.plan(forProductID = it) != Plan.free }
 
     /** Re-reads current entitlements (offline-friendly: Google Play caches). */
     suspend fun refresh() {

@@ -112,8 +112,19 @@ class SyncService(
      *  app_config row exists. */
     fun flag(key: String, default: Boolean = false): Boolean = flags[key] ?: default
 
+    /** The `value` of each flag that resolved ON for this install (an
+     *  experiment's payload, e.g. the product suffix of a price test). */
+    var flagValues: Map<String, String> by mutableStateOf(
+        Defaults.standard.json("flags.values", MapSerializer(String.serializer(), String.serializer())) ?: emptyMap())
+        private set
+
+    /** A flag's payload, or null when the flag is off for this install (the
+     *  control half of an A/B split) or carries no value. */
+    fun flagValue(key: String): String? = flagValues[key]
+
     @Serializable
-    private data class AppConfigRow(val key: String, val enabled: Boolean, val ab_split: Boolean)
+    private data class AppConfigRow(
+        val key: String, val enabled: Boolean, val ab_split: Boolean, val value: String? = null)
 
     /** Fetches app_config and resolves each flag: plain rows apply to
      *  everyone (remote toggle); ab_split rows put this install in a stable
@@ -123,17 +134,22 @@ class SyncService(
         val client = client ?: return
         val rows = try {
             AppJson.decodeFromString(
-                ListSerializer(AppConfigRow.serializer()), client.select("app_config", "key, enabled, ab_split"))
+                ListSerializer(AppConfigRow.serializer()), client.select("app_config", "key, enabled, ab_split, value"))
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
             return
         }
         val resolved = mutableMapOf<String, Boolean>()
+        val values = mutableMapOf<String, String>()
         for (row in rows) {
-            resolved[row.key] = if (row.ab_split) abVariant(row.key) else row.enabled
+            val on = if (row.ab_split) abVariant(row.key) else row.enabled
+            resolved[row.key] = on
+            if (on && !row.value.isNullOrEmpty()) values[row.key] = row.value
         }
         flags = resolved
+        flagValues = values
+        Defaults.standard.setJson("flags.values", values.toMap(), MapSerializer(String.serializer(), String.serializer()))
         Defaults.standard.setJson("flags.cache", resolved.toMap(), MapSerializer(String.serializer(), Boolean.serializer()))
     }
 

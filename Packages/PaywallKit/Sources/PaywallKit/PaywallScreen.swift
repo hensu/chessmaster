@@ -11,6 +11,8 @@ import SwiftUI
 public struct PaywallScreen: View {
     let entitlements: EntitlementStore
     let appAccountToken: UUID?
+    /// Price-test product suffix for this install (nil = today's prices).
+    let priceVariant: String?
     /// Called with the signed transaction after a successful purchase so the
     /// app can register the entitlement server-side.
     let onPurchaseVerify: ((String) async -> Void)?
@@ -39,6 +41,7 @@ public struct PaywallScreen: View {
     public init(
         entitlements: EntitlementStore,
         appAccountToken: UUID? = nil,
+        priceVariant: String? = nil,
         onPurchaseVerify: ((String) async -> Void)? = nil,
         onPurchaseCancelled: (() -> Void)? = nil,
         onClose: (() -> Void)? = nil,
@@ -46,6 +49,7 @@ public struct PaywallScreen: View {
     ) {
         self.entitlements = entitlements
         self.appAccountToken = appAccountToken
+        self.priceVariant = priceVariant
         self.onPurchaseVerify = onPurchaseVerify
         self.onPurchaseCancelled = onPurchaseCancelled
         self.onClose = onClose
@@ -56,13 +60,14 @@ public struct PaywallScreen: View {
         if let onClose { onClose() } else { dismiss() }
     }
 
-    private func productID(_ tier: Plan, annual: Bool) -> String {
-        switch tier {
-        case .diamond: annual ? "com.chessmaster.diamond.yearly" : "com.chessmaster.diamond.monthly"
-        default:       annual ? "com.chessmaster.premium.yearly" : "com.chessmaster.premium.monthly"
-        }
+    /// The product to sell for a tier: this install's price-test variant
+    /// when the store has it, else the base product (a variant that isn't
+    /// approved yet, or was removed, must never leave the sheet empty).
+    private func product(_ tier: Plan, annual: Bool) -> Product? {
+        let base = EntitlementStore.baseProductID(tier, annual: annual)
+        return products[EntitlementStore.productID(base, variant: priceVariant)] ?? products[base]
     }
-    private var selectedProduct: Product? { products[productID(tier, annual: isAnnual)] }
+    private var selectedProduct: Product? { product(tier, annual: isAnnual) }
     private var hasTrial: Bool {
         trialEligible && selectedProduct?.subscription?.introductoryOffer?.paymentMode == .freeTrial
     }
@@ -162,7 +167,7 @@ public struct PaywallScreen: View {
 
     private func tierCard(_ cardTier: Plan, title: String, badge: String?, features: [String]) -> some View {
         let selected = tier == cardTier
-        let product = products[productID(cardTier, annual: isAnnual)]
+        let product = product(cardTier, annual: isAnnual)
         return Button {
             withAnimation(.easeInOut(duration: 0.15)) { tier = cardTier }
         } label: {
@@ -273,7 +278,9 @@ public struct PaywallScreen: View {
 
     private func loadProducts() async {
         guard products.isEmpty else { return }
-        if let loaded = try? await Product.products(for: EntitlementStore.productIDs) {
+        let ids = EntitlementStore.productIDs
+            + EntitlementStore.productIDs.map { EntitlementStore.productID($0, variant: priceVariant) }
+        if let loaded = try? await Product.products(for: Set(ids)) {
             products = Dictionary(uniqueKeysWithValues: loaded.map { ($0.id, $0) })
             // Returning subscribers aren't eligible — don't promise a trial.
             if let sub = products["com.chessmaster.diamond.yearly"]?.subscription {

@@ -17,6 +17,7 @@ struct AppPaywall: View {
         PaywallScreen(
             entitlements: container.entitlements,
             appAccountToken: container.sync.userID,
+            priceVariant: container.sync.flagValue("price_test"),
             onPurchaseVerify: { jws in
                 container.sync.track("purchase_verified", ["source": source])
                 await container.sync.verifySubscription(jws: jws)

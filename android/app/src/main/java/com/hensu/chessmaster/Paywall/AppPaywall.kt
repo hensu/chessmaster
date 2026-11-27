@@ -22,6 +22,7 @@ fun AppPaywall(source: String, onClose: (() -> Unit)? = null, closeDelay: Durati
     PaywallScreen(
         entitlements = container.entitlements,
         appAccountToken = container.sync.userID,
+        priceVariant = container.sync.flagValue("price_test"),
         onPurchaseVerify = { productID, purchaseToken ->
             container.sync.track("purchase_verified", mapOf("source" to source))
             container.sync.verifySubscription(productID, purchaseToken)

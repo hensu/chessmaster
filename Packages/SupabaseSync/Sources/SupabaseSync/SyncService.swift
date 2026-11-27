@@ -86,10 +86,20 @@ public final class SyncService {
         flags[key] ?? defaultValue
     }
 
+    /// The `value` of each flag that resolved ON for this install (an
+    /// experiment's payload, e.g. the product suffix of a price test).
+    public private(set) var flagValues: [String: String] =
+        UserDefaults.standard.dictionary(forKey: "flags.values") as? [String: String] ?? [:]
+
+    /// A flag's payload, or nil when the flag is off for this install (the
+    /// control half of an A/B split) or carries no value.
+    public func flagValue(_ key: String) -> String? { flagValues[key] }
+
     private struct AppConfigRow: Decodable, Sendable {
         let key: String
         let enabled: Bool
         let ab_split: Bool
+        let value: String?
     }
 
     /// Fetches app_config and resolves each flag: plain rows apply to
@@ -99,14 +109,19 @@ public final class SyncService {
     public func refreshFlags() async {
         guard let client else { return }
         guard let rows: [AppConfigRow] = try? await client.from("app_config")
-            .select("key, enabled, ab_split").execute().value
+            .select("key, enabled, ab_split, value").execute().value
         else { return }
         var resolved: [String: Bool] = [:]
+        var values: [String: String] = [:]
         for row in rows {
-            resolved[row.key] = row.ab_split ? Self.abVariant(row.key) : row.enabled
+            let on = row.ab_split ? Self.abVariant(row.key) : row.enabled
+            resolved[row.key] = on
+            if on, let value = row.value, !value.isEmpty { values[row.key] = value }
         }
         flags = resolved
+        flagValues = values
         UserDefaults.standard.set(resolved, forKey: "flags.cache")
+        UserDefaults.standard.set(values, forKey: "flags.values")
     }
 
     /// Deterministic 50/50 assignment, stable per install and per flag
