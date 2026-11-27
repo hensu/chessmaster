@@ -39,6 +39,7 @@ def main():
     territories = [t["id"] for t in pages("/v1/territories?limit=200", tok)[0]]
 
     for short, usd in prices.items():
+        tok = token()   # tokens last 20 minutes; one product is ~350 calls
         base = subs[PREFIX + short]
         pid = f"{PREFIX}{short}.{suffix}"
         ba = base["attributes"]
